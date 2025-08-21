@@ -58,7 +58,9 @@ const UserLoginPage: React.FC = () => {
     await new Promise((r) => setTimeout(r, 700));
     setVerified(true);
     setLoading(false);
-    router.push("/");
+
+    // Redirect to user test page after successful verification
+    router.push("/login/user/test");
   };
 
   return (

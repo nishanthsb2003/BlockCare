@@ -148,7 +148,12 @@ const LoginPage: React.FC = () => {
 
     try {
       await new Promise((res) => setTimeout(res, 1500));
-      router.push(`/${selectedRole}/dashboard`);
+      // Redirect based on selected role
+      if (selectedRole === "patient") {
+        router.push("/login/user");
+      } else if (selectedRole === "hospital") {
+        router.push("/login/doctor");
+      }
     } catch (error) {
       console.error("Navigation failed:", error);
       setIsLoading(false);
