@@ -4,6 +4,7 @@ import Navigation from "./Navigation";
 import HeroContent from "./HeroContent";
 import InteractiveRecord from "./InteractiveRecord";
 import StatsCards from "./StatsCards";
+import ModelViewer from "@/components/ModelViewer";
 
 const Hero = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -71,7 +72,7 @@ const Hero = () => {
 
             {/* Right Column */}
             <div className="relative lg:pl-8">
-              <InteractiveRecord mousePosition={mousePosition} />
+              <ModelViewer modelPath={"/models/heart.glb"} />
               {/* <StatsCards /> */}
             </div>
           </div>
