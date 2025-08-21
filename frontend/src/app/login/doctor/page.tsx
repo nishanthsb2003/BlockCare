@@ -224,7 +224,7 @@ export default function DoctorLoginPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full h-11 bg-secondary hover:text-black"
+                className="w-full h-11 bg-primary hover:bg-black"
                 disabled={isLoading}
               >
                 {isLoading ? (
