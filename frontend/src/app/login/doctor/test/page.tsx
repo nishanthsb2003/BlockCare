@@ -11,23 +11,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import UploadComponent from "@/components/Upload";
+import PatientDocumentModal from "@/components/PatientDocumentModal";
+import PatientTable from "@/components/PatientTable";
 import {
   ArrowLeft,
   CalendarDays,
-  Clock,
-  FileText,
-  Download,
-  Eye,
   Mail,
   MapPin,
   Phone,
@@ -35,16 +24,13 @@ import {
   Search,
   Stethoscope,
   Users,
-  X,
-  Calendar,
-  Activity,
-  Heart,
 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { Patient, Doctor, Appointment } from "@/types/medical";
 
 // Mock data for demonstration
-const doctorData = {
+const doctorData: Doctor = {
   name: "Dr. Sarah Johnson",
   specialty: "Cardiologist",
   email: "sarah.johnson@hospital.com",
@@ -61,7 +47,7 @@ const doctorData = {
   avatar: "/professional-doctor-headshot.png",
 };
 
-const patientsData = [
+const patientsData: Patient[] = [
   {
     id: 1,
     name: "John Smith",
@@ -148,482 +134,16 @@ const patientsData = [
   },
 ];
 
-// Mock documents data for each patient
-const patientDocuments = {
-  1: [
-    {
-      id: 1,
-      name: "ECG Report - Jan 2024",
-      type: "pdf",
-      date: "2024-01-15",
-      size: "2.4 MB",
-    },
-    {
-      id: 2,
-      name: "Blood Pressure Log",
-      type: "pdf",
-      date: "2024-01-10",
-      size: "1.8 MB",
-    },
-    {
-      id: 3,
-      name: "Medication List",
-      type: "pdf",
-      date: "2024-01-05",
-      size: "0.9 MB",
-    },
-    {
-      id: 4,
-      name: "Lab Results - December",
-      type: "pdf",
-      date: "2023-12-28",
-      size: "1.2 MB",
-    },
-  ],
-  2: [
-    {
-      id: 1,
-      name: "Holter Monitor Report",
-      type: "pdf",
-      date: "2024-01-12",
-      size: "3.1 MB",
-    },
-    {
-      id: 2,
-      name: "Arrhythmia Analysis",
-      type: "pdf",
-      date: "2024-01-08",
-      size: "2.7 MB",
-    },
-    {
-      id: 3,
-      name: "Cardiac MRI Results",
-      type: "pdf",
-      date: "2023-12-20",
-      size: "4.5 MB",
-    },
-  ],
-  3: [
-    {
-      id: 1,
-      name: "Angiogram Report",
-      type: "pdf",
-      date: "2024-01-10",
-      size: "5.2 MB",
-    },
-    {
-      id: 2,
-      name: "Stress Test Results",
-      type: "pdf",
-      date: "2024-01-05",
-      size: "2.9 MB",
-    },
-    {
-      id: 3,
-      name: "Cholesterol Panel",
-      type: "pdf",
-      date: "2023-12-30",
-      size: "1.1 MB",
-    },
-    {
-      id: 4,
-      name: "Treatment Plan",
-      type: "pdf",
-      date: "2023-12-25",
-      size: "0.8 MB",
-    },
-  ],
-  4: [
-    {
-      id: 1,
-      name: "Chest X-Ray Report",
-      type: "pdf",
-      date: "2024-01-08",
-      size: "3.3 MB",
-    },
-    {
-      id: 2,
-      name: "Initial Consultation",
-      type: "pdf",
-      date: "2024-01-01",
-      size: "1.5 MB",
-    },
-  ],
-  5: [
-    {
-      id: 1,
-      name: "Echocardiogram Report",
-      type: "pdf",
-      date: "2024-01-05",
-      size: "4.1 MB",
-    },
-    {
-      id: 2,
-      name: "Heart Failure Assessment",
-      type: "pdf",
-      date: "2023-12-28",
-      size: "2.8 MB",
-    },
-    {
-      id: 3,
-      name: "Medication Dosage Chart",
-      type: "pdf",
-      date: "2023-12-20",
-      size: "0.7 MB",
-    },
-    {
-      id: 4,
-      name: "Diet and Exercise Plan",
-      type: "pdf",
-      date: "2023-12-15",
-      size: "1.3 MB",
-    },
-    {
-      id: 5,
-      name: "Emergency Action Plan",
-      type: "pdf",
-      date: "2023-12-10",
-      size: "1.0 MB",
-    },
-  ],
-  6: [
-    {
-      id: 1,
-      name: "Valve Function Test",
-      type: "pdf",
-      date: "2024-01-03",
-      size: "3.7 MB",
-    },
-    {
-      id: 2,
-      name: "Pre-Surgery Assessment",
-      type: "pdf",
-      date: "2023-12-22",
-      size: "2.6 MB",
-    },
-    {
-      id: 3,
-      name: "Surgical Consultation",
-      type: "pdf",
-      date: "2023-12-18",
-      size: "1.9 MB",
-    },
-  ],
-};
-
-const upcomingAppointments = [
+const upcomingAppointments: Appointment[] = [
   { time: "09:00 AM", patient: "John Smith", type: "Follow-up" },
   { time: "10:30 AM", patient: "Emily Davis", type: "Consultation" },
   { time: "02:00 PM", patient: "Michael Brown", type: "Procedure" },
   { time: "03:30 PM", patient: "Lisa Wilson", type: "Check-up" },
 ];
 
-// Custom Modal Component
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}
-
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm transition-opacity duration-300"
-        onClick={onClose}
-      />
-      {/* Modal Content */}
-      <div className="relative bg-card border border-border rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-300">
-        {children}
-      </div>
-    </div>
-  );
-};
-
-// Patient Document Modal Component
-interface PatientDocumentModalProps {
-  patient: any;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const PatientDocumentModal: React.FC<PatientDocumentModalProps> = ({
-  patient,
-  isOpen,
-  onClose,
-}) => {
-  const [activeTab, setActiveTab] = useState("documents");
-  const documents =
-    patientDocuments[patient?.id as keyof typeof patientDocuments] || [];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Critical":
-        return "bg-destructive text-destructive-foreground";
-      case "Follow-up":
-        return "bg-secondary text-secondary-foreground";
-      case "Active":
-        return "bg-primary text-primary-foreground";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
-
-  const handleFileSelect = (file: File) => {
-    console.log("File selected:", file.name);
-  };
-
-  const handleUpload = (file: File) => {
-    console.log("Uploading file:", file.name);
-    // Add upload logic here
-  };
-
-  const handleDownload = (document: any) => {
-    console.log("Downloading:", document.name);
-    // Add download logic here
-  };
-
-  const handleView = (document: any) => {
-    console.log("Viewing:", document.name);
-    // Add view logic here
-  };
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      {/* Modal Header */}
-      <div className="flex items-center justify-between p-6 border-b border-border bg-card">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback className="bg-primary text-primary-foreground font-bold">
-              {patient?.name
-                ?.split(" ")
-                .map((n: string) => n[0])
-                .join("")}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h2 className="text-2xl font-bold text-card-foreground">
-              {patient?.name}
-            </h2>
-            <p className="text-muted-foreground">Patient ID: {patient?.id}</p>
-          </div>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="hover:bg-muted rounded-full"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* Modal Content */}
-      <div className="flex h-[calc(90vh-120px)]">
-        {/* Left Panel - Patient Details */}
-        <div className="w-1/3 border-r border-border bg-muted/30 p-6 overflow-y-auto">
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                Patient Information
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-card rounded-lg">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Age</p>
-                    <p className="font-medium text-card-foreground">
-                      {patient?.age} years
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-card rounded-lg">
-                  <Heart className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Condition</p>
-                    <p className="font-medium text-card-foreground">
-                      {patient?.condition}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-card rounded-lg">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium text-card-foreground">
-                      {patient?.email}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-card rounded-lg">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <p className="font-medium text-card-foreground">
-                      {patient?.phone}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-card rounded-lg">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Address</p>
-                    <p className="font-medium text-card-foreground">
-                      {patient?.address}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-card-foreground mb-3">
-                Medical Details
-              </h4>
-              <div className="space-y-3">
-                <div className="p-3 bg-card rounded-lg">
-                  <p className="text-sm text-muted-foreground">Blood Type</p>
-                  <p className="font-medium text-card-foreground">
-                    {patient?.bloodType}
-                  </p>
-                </div>
-                <div className="p-3 bg-card rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Emergency Contact
-                  </p>
-                  <p className="font-medium text-card-foreground">
-                    {patient?.emergencyContact}
-                  </p>
-                </div>
-                <div className="p-3 bg-card rounded-lg">
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <Badge className={getStatusColor(patient?.status)}>
-                    {patient?.status}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Panel - Documents and Upload */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="h-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger
-                value="documents"
-                className="flex items-center gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                Documents ({documents.length})
-              </TabsTrigger>
-              <TabsTrigger value="upload" className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Upload New
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="documents" className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-card-foreground mb-4">
-                  Patient Documents
-                </h3>
-                {documents.length > 0 ? (
-                  <div className="space-y-3">
-                    {documents.map((doc: any) => (
-                      <div
-                        key={doc.id}
-                        className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-accent/10 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <FileText className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-card-foreground">
-                              {doc.name}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              {doc.date} • {doc.size}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleView(doc)}
-                            className="hover:bg-primary/10 hover:text-primary"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDownload(doc)}
-                            className="hover:bg-primary/10 hover:text-primary"
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">
-                      No documents available for this patient
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="upload" className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-card-foreground mb-4">
-                  Upload New Document
-                </h3>
-                <UploadComponent
-                  onFileSelect={handleFileSelect}
-                  onUpload={handleUpload}
-                  acceptedTypes={[
-                    ".pdf",
-                    ".jpg",
-                    ".jpeg",
-                    ".png",
-                    ".doc",
-                    ".docx",
-                  ]}
-                  maxSize={25}
-                  showCamera={true}
-                  showDragDrop={true}
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </Modal>
-  );
-};
-
 export function DoctorProfile() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
@@ -631,7 +151,7 @@ export function DoctorProfile() {
     router.back();
   };
 
-  const handlePatientClick = (patient: any) => {
+  const handlePatientClick = (patient: Patient) => {
     setSelectedPatient(patient);
     setIsModalOpen(true);
   };
@@ -646,19 +166,6 @@ export function DoctorProfile() {
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.condition.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Critical":
-        return "bg-destructive text-destructive-foreground";
-      case "Follow-up":
-        return "bg-secondary text-secondary-foreground";
-      case "Active":
-        return "bg-primary text-primary-foreground";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -780,48 +287,10 @@ export function DoctorProfile() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-lg shadow-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="font-semibold">
-                        Patient Name
-                      </TableHead>
-                      <TableHead className="font-semibold">Age</TableHead>
-                      <TableHead className="font-semibold">Condition</TableHead>
-                      <TableHead className="font-semibold">
-                        Last Visit
-                      </TableHead>
-                      <TableHead className="font-semibold">
-                        Next Appointment
-                      </TableHead>
-                      <TableHead className="font-semibold">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPatients.map((patient) => (
-                      <TableRow
-                        key={patient.id}
-                        className="hover:bg-muted/30 cursor-pointer transition-colors"
-                        onClick={() => handlePatientClick(patient)}
-                      >
-                        <TableCell className="font-medium">
-                          {patient.name}
-                        </TableCell>
-                        <TableCell>{patient.age}</TableCell>
-                        <TableCell>{patient.condition}</TableCell>
-                        <TableCell>{patient.lastVisit}</TableCell>
-                        <TableCell>{patient.nextAppointment}</TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(patient.status)}>
-                            {patient.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <PatientTable
+                patients={filteredPatients}
+                onPatientClick={handlePatientClick}
+              />
             </CardContent>
           </Card>
         </TabsContent>
