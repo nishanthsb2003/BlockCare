@@ -108,7 +108,7 @@ function ErrorFallback({ modelPath }: { modelPath: string }) {
 // Main ModelViewer Component
 const ModelViewer: React.FC<ModelViewerProps> = ({
   modelPath,
-  title = "3D Model Viewer",
+  title = "Secure Your Re",
   description = "Interactive 3D model display",
   scale = 1,
   position = [0, 0, 0],
@@ -135,23 +135,23 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   };
 
   return (
-    <Card className="shadow-lg border-0 overflow-hidden">
-      {title && (
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center">
-              <span className="text-primary text-sm">🎲</span>
-            </div>
-            {title}
-          </CardTitle>
-          {description && <CardDescription>{description}</CardDescription>}
-        </CardHeader>
-      )}
+    <Card className="shadow-lg bg-background">
+      {/* {title && (
+        // <CardHeader className="pb-2">
+        //   <CardTitle className="flex items-center gap-2 text-xl">
+        //     <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center">
+        //       <span className="text-primary text-sm">🎲</span>
+        //     </div>
+        //     {title}
+        //   </CardTitle>
+        //   {description && <CardDescription>{description}</CardDescription>}
+        // </CardHeader>
+      )} */}
 
       <CardContent className="p-0">
         <div className="relative" style={{ width, height }}>
           {/* Control Buttons */}
-          {showControls && (
+          {/* {showControls && (
             <div className="absolute top-4 right-4 z-10 flex gap-2">
               <Button
                 size="sm"
@@ -159,8 +159,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
                 onClick={handleResetCamera}
                 className="h-8 w-8 p-0 bg-background/80 backdrop-blur-sm border-0 shadow-md hover:bg-background/90"
               >
-                <Home className="h-4 w-4" />
-              </Button>
+                {/* <Home className="h-4 w-4" /> */}
+          {/* </Button>
               <Button
                 size="sm"
                 variant="secondary"
@@ -169,14 +169,14 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               >
                 <RotateCw className="h-4 w-4" />
               </Button>
-            </div>
-          )}
+            </div> */}
+          {/* )}  */}
 
           {error ? (
             <ErrorFallback modelPath={modelPath} />
           ) : (
             <Canvas
-              camera={{ position: [0, 0, 5], fov: 45 }}
+              camera={{ position: [0, 0, 1], fov: 40 }}
               style={{
                 width: "100%",
                 height: "100%",
@@ -228,13 +228,13 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           )}
 
           {/* Instructions */}
-          {showControls && !error && (
+          {/* {showControls && !error && (
             <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm rounded-md px-3 py-2 text-xs text-muted-foreground border-0 shadow-md">
               <p>
                 🖱️ Drag to rotate • 🔍 Scroll to zoom • 🖐️ Right-click to pan
               </p>
             </div>
-          )}
+          )} */}
         </div>
       </CardContent>
     </Card>

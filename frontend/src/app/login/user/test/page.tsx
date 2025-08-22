@@ -10,9 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import UploadComponent from "@/components/Upload";
 
 interface Document {
   id: string;
@@ -97,34 +97,23 @@ export default function TestUserPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
   };
 
-  const handleUpload = () => {
-    if (selectedFile) {
-      const newDocument: Document = {
-        id: Date.now().toString(),
-        name: selectedFile.name,
-        type: selectedFile.type.includes("pdf") ? "PDF" : "Image",
-        size: `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`,
-        uploadDate: new Date().toISOString().split("T")[0],
-        status: "processing",
-        uploadedBy: "user",
-      };
+  const handleUpload = async (file: File) => {
+    const newDocument: Document = {
+      id: Date.now().toString(),
+      name: file.name,
+      type: file.type.includes("pdf") ? "PDF" : "Image",
+      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      uploadDate: new Date().toISOString().split("T")[0],
+      status: "processing",
+      uploadedBy: "user",
+    };
 
-      setDocuments((prev) => [newDocument, ...prev]);
-      setSelectedFile(null);
-
-      // Reset file input
-      const fileInput = document.getElementById(
-        "file-upload"
-      ) as HTMLInputElement;
-      if (fileInput) fileInput.value = "";
-    }
+    setDocuments((prev) => [newDocument, ...prev]);
+    setSelectedFile(null);
   };
 
   const getStatusBadge = (status: Document["status"]) => {
@@ -301,168 +290,51 @@ export default function TestUserPage() {
         </div>
 
         {/* Enhanced Upload Section */}
-        <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <span className="text-xl">📤</span>
-              </div>
-              <div>
-                <CardTitle className="text-foreground text-xl">
-                  Upload New Document
-                </CardTitle>
-                <CardDescription className="text-base">
-                  Select and upload your medical documents for secure processing
-                </CardDescription>
-              </div>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <span className="text-xl">📤</span>
             </div>
-          </CardHeader>
-          <CardContent className="pt-8">
-            <div className="space-y-6">
-              <div className="w-full max-w-2xl mx-auto">
-                <Label
-                  htmlFor="file-upload"
-                  className="text-foreground font-medium text-base block mb-4"
-                >
-                  Choose Document File
-                </Label>
-
-                {/* Better Custom File Upload Area */}
-                <div className="relative">
-                  <input
-                    id="file-upload"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileSelect}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                  />
-                  <div className="border-2 border-dashed border-primary/30 hover:border-primary/60 rounded-2xl p-12 text-center bg-white/80 hover:bg-white/90 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md">
-                    <div className="space-y-6">
-                      <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center shadow-lg">
-                        <span className="text-3xl">�</span>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-xl font-semibold text-gray-800">
-                          {selectedFile
-                            ? `Selected: ${selectedFile.name}`
-                            : "Drop your file here or click to browse"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Supports PDF, JPG, JPEG, PNG files up to 10MB
-                        </p>
-                      </div>
-                      <div className="flex justify-center space-x-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="lg"
-                          className="bg-white hover:bg-gray-50 border-primary/30 text-primary hover:border-primary font-semibold px-8"
-                        >
-                          Browse Files
-                        </Button>
-                        {selectedFile && (
-                          <Button
-                            type="button"
-                            size="lg"
-                            onClick={handleUpload}
-                            className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8"
-                          >
-                            Upload Now
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {selectedFile && (
-                <div className="max-w-2xl mx-auto p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 shadow-sm animate-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="p-3 rounded-full bg-green-100 shadow-sm">
-                        <span className="text-2xl">
-                          {getFileIcon(selectedFile.type)}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-green-800 text-lg">
-                          {selectedFile.name}
-                        </p>
-                        <p className="text-sm text-green-600">
-                          {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB •
-                          Ready to upload
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-green-600">
-                      <svg
-                        className="w-8 h-8"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div>
+              <h2 className="text-foreground text-xl font-semibold">
+                Upload New Document
+              </h2>
+              <p className="text-muted-foreground text-base">
+                Select and upload your medical documents for secure processing
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Enhanced Documents List */}
-        <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="border-b border-border bg-gradient-to-r from-secondary/30 to-transparent">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-secondary/20">
-                  <span className="text-xl">📋</span>
-                </div>
-                <div>
-                  <CardTitle className="text-foreground text-xl">
-                    Document Library
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    All your medical documents and reports from doctors
-                  </CardDescription>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
+          <UploadComponent
+            onFileSelect={handleFileSelect}
+            onUpload={handleUpload}
+            acceptedTypes={[".pdf", ".jpg", ".jpeg", ".png"]}
+            maxSize={10}
+            showCamera={true}
+            showDragDrop={true}
+            className="hover:shadow-xl transition-all duration-300"
+          />
+
+          {/* Enhanced Documents List */}
+          <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-card/50 backdrop-blur-sm">
+            <CardHeader className="border-b border-border bg-gradient-to-r from-secondary/30 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 rounded-lg bg-secondary/20">
+                    <span className="text-xl">📋</span>
                   </div>
-                  <Input
-                    type="text"
-                    placeholder="Search documents..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 w-64 bg-white/80 border-border focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                  <div>
+                    <CardTitle className="text-foreground text-xl">
+                      Document Library
+                    </CardTitle>
+                    <CardDescription className="text-base">
+                      All your medical documents and reports from doctors
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
                       <svg
                         className="w-4 h-4"
                         fill="none"
@@ -473,241 +345,271 @@ export default function TestUserPage() {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                         />
                       </svg>
-                    </button>
-                  )}
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Search documents..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 pr-4 py-2 w-64 bg-white/80 border-border focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-8">
-            {/* Search Results Info */}
-            {searchQuery && (
-              <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                <p className="text-sm text-foreground">
-                  <span className="font-medium">
-                    {filteredDocuments.length} document
-                    {filteredDocuments.length !== 1 ? "s" : ""} found
-                  </span>
-                  {filteredDocuments.length > 0 ? (
-                    <span className="text-muted-foreground">
-                      {" "}
-                      for "{searchQuery}"
+            </CardHeader>
+            <CardContent className="pt-8">
+              {/* Search Results Info */}
+              {searchQuery && (
+                <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                  <p className="text-sm text-foreground">
+                    <span className="font-medium">
+                      {filteredDocuments.length} document
+                      {filteredDocuments.length !== 1 ? "s" : ""} found
                     </span>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      {" "}
-                      for "{searchQuery}". Try a different search term.
-                    </span>
-                  )}
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {filteredDocuments.length === 0 ? (
-                <div className="text-center py-16 text-muted-foreground">
-                  <div className="text-6xl mb-4">📄</div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    {searchQuery
-                      ? "No matching documents found"
-                      : "No documents uploaded yet"}
-                  </h3>
-                  <p>
-                    {searchQuery
-                      ? "Try adjusting your search terms"
-                      : "Upload your first medical document to get started"}
+                    {filteredDocuments.length > 0 ? (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        for "{searchQuery}"
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        for "{searchQuery}". Try a different search term.
+                      </span>
+                    )}
                   </p>
-                  {searchQuery && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setSearchQuery("")}
-                      className="mt-4"
-                    >
-                      Clear Search
-                    </Button>
-                  )}
                 </div>
-              ) : (
-                filteredDocuments.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="group relative overflow-hidden rounded-xl border border-border hover:border-primary/30 bg-gradient-to-r from-card to-card/80 hover:from-card/90 hover:to-card/60 p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-6">
-                        <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-200 shadow-sm">
-                          <span className="text-3xl">
-                            {getFileIcon(doc.type)}
-                          </span>
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="font-semibold text-foreground text-lg group-hover:text-primary transition-colors duration-200">
-                            {highlightText(doc.name, searchQuery)}
-                          </h3>
-                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                            <span className="font-medium">{doc.type}</span>
-                            <span>{doc.size}</span>
-                            <span>
-                              📅 {new Date(doc.uploadDate).toLocaleDateString()}
+              )}
+
+              <div className="space-y-4">
+                {filteredDocuments.length === 0 ? (
+                  <div className="text-center py-16 text-muted-foreground">
+                    <div className="text-6xl mb-4">📄</div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      {searchQuery
+                        ? "No matching documents found"
+                        : "No documents uploaded yet"}
+                    </h3>
+                    <p>
+                      {searchQuery
+                        ? "Try adjusting your search terms"
+                        : "Upload your first medical document to get started"}
+                    </p>
+                    {searchQuery && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setSearchQuery("")}
+                        className="mt-4"
+                      >
+                        Clear Search
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  filteredDocuments.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="group relative overflow-hidden rounded-xl border border-border hover:border-primary/30 bg-gradient-to-r from-card to-card/80 hover:from-card/90 hover:to-card/60 p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-6">
+                          <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-200 shadow-sm">
+                            <span className="text-3xl">
+                              {getFileIcon(doc.type)}
                             </span>
                           </div>
-                          <div className="flex items-center space-x-3 pt-1">
-                            {getUploadSourceBadge(
-                              doc.uploadedBy,
-                              doc.doctorName
-                            )}
-                            {getStatusBadge(doc.status)}
+                          <div className="space-y-2">
+                            <h3 className="font-semibold text-foreground text-lg group-hover:text-primary transition-colors duration-200">
+                              {highlightText(doc.name, searchQuery)}
+                            </h3>
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                              <span className="font-medium">{doc.type}</span>
+                              <span>{doc.size}</span>
+                              <span>
+                                📅{" "}
+                                {new Date(doc.uploadDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-3 pt-1">
+                              {getUploadSourceBadge(
+                                doc.uploadedBy,
+                                doc.doctorName
+                              )}
+                              {getStatusBadge(doc.status)}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center space-x-3 opacity-80 group-hover:opacity-100 transition-opacity duration-200">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-foreground border-border hover:bg-primary/10 hover:text-primary hover:border-primary/30 shadow-sm transition-all duration-200"
-                        >
-                          👁️ View
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-muted-foreground border-border hover:bg-secondary/20 hover:text-foreground shadow-sm transition-all duration-200"
-                        >
-                          📥 Download
-                        </Button>
+                        <div className="flex items-center space-x-3 opacity-80 group-hover:opacity-100 transition-opacity duration-200">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-foreground border-border hover:bg-primary/10 hover:text-primary hover:border-primary/30 shadow-sm transition-all duration-200"
+                          >
+                            👁️ View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-muted-foreground border-border hover:bg-secondary/20 hover:text-foreground shadow-sm transition-all duration-200"
+                          >
+                            📥 Download
+                          </Button>
+                        </div>
                       </div>
                     </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Enhanced Stats Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-chart-1/10 to-chart-1/5 hover:-translate-y-1">
+              <CardContent className="pt-8 pb-6">
+                <div className="text-center space-y-3">
+                  <div className="p-3 rounded-full bg-chart-1/20 w-fit mx-auto">
+                    <span className="text-2xl">📊</span>
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                  <div className="text-3xl font-bold text-chart-1">
+                    {searchQuery ? filteredDocuments.length : documents.length}
+                  </div>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    {searchQuery ? "Found Documents" : "Total Documents"}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Enhanced Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-chart-1/10 to-chart-1/5 hover:-translate-y-1">
-            <CardContent className="pt-8 pb-6">
-              <div className="text-center space-y-3">
-                <div className="p-3 rounded-full bg-chart-1/20 w-fit mx-auto">
-                  <span className="text-2xl">📊</span>
+            <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-chart-2/10 to-chart-2/5 hover:-translate-y-1">
+              <CardContent className="pt-8 pb-6">
+                <div className="text-center space-y-3">
+                  <div className="p-3 rounded-full bg-chart-2/20 w-fit mx-auto">
+                    <span className="text-2xl">✅</span>
+                  </div>
+                  <div className="text-3xl font-bold text-chart-2">
+                    {searchQuery
+                      ? filteredDocuments.filter((d) => d.status === "verified")
+                          .length
+                      : documents.filter((d) => d.status === "verified").length}
+                  </div>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Verified
+                  </p>
                 </div>
-                <div className="text-3xl font-bold text-chart-1">
-                  {searchQuery ? filteredDocuments.length : documents.length}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-500/5 hover:-translate-y-1">
+              <CardContent className="pt-8 pb-6">
+                <div className="text-center space-y-3">
+                  <div className="p-3 rounded-full bg-blue-500/20 w-fit mx-auto">
+                    <span className="text-2xl">🩺</span>
+                  </div>
+                  <div className="text-3xl font-bold text-blue-600">
+                    {searchQuery
+                      ? filteredDocuments.filter(
+                          (d) => d.uploadedBy === "doctor"
+                        ).length
+                      : documents.filter((d) => d.uploadedBy === "doctor")
+                          .length}
+                  </div>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    From Doctors
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground font-medium">
-                  {searchQuery ? "Found Documents" : "Total Documents"}
-                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-green-500/10 to-green-500/5 hover:-translate-y-1">
+              <CardContent className="pt-8 pb-6">
+                <div className="text-center space-y-3">
+                  <div className="p-3 rounded-full bg-green-500/20 w-fit mx-auto">
+                    <span className="text-2xl">👤</span>
+                  </div>
+                  <div className="text-3xl font-bold text-green-600">
+                    {searchQuery
+                      ? filteredDocuments.filter((d) => d.uploadedBy === "user")
+                          .length
+                      : documents.filter((d) => d.uploadedBy === "user").length}
+                  </div>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Your Uploads
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Activity Section */}
+          <Card className="border-border shadow-lg bg-gradient-to-r from-muted/20 to-transparent">
+            <CardHeader>
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <span className="text-xl">⏰</span>
+                </div>
+                <div>
+                  <CardTitle className="text-foreground">
+                    Recent Activity
+                  </CardTitle>
+                  <CardDescription>
+                    Latest document updates and uploads
+                  </CardDescription>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-chart-2/10 to-chart-2/5 hover:-translate-y-1">
-            <CardContent className="pt-8 pb-6">
-              <div className="text-center space-y-3">
-                <div className="p-3 rounded-full bg-chart-2/20 w-fit mx-auto">
-                  <span className="text-2xl">✅</span>
-                </div>
-                <div className="text-3xl font-bold text-chart-2">
-                  {searchQuery
-                    ? filteredDocuments.filter((d) => d.status === "verified")
-                        .length
-                    : documents.filter((d) => d.status === "verified").length}
-                </div>
-                <p className="text-sm text-muted-foreground font-medium">
-                  Verified
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500/10 to-blue-500/5 hover:-translate-y-1">
-            <CardContent className="pt-8 pb-6">
-              <div className="text-center space-y-3">
-                <div className="p-3 rounded-full bg-blue-500/20 w-fit mx-auto">
-                  <span className="text-2xl">🩺</span>
-                </div>
-                <div className="text-3xl font-bold text-blue-600">
-                  {searchQuery
-                    ? filteredDocuments.filter((d) => d.uploadedBy === "doctor")
-                        .length
-                    : documents.filter((d) => d.uploadedBy === "doctor").length}
-                </div>
-                <p className="text-sm text-muted-foreground font-medium">
-                  From Doctors
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-green-500/10 to-green-500/5 hover:-translate-y-1">
-            <CardContent className="pt-8 pb-6">
-              <div className="text-center space-y-3">
-                <div className="p-3 rounded-full bg-green-500/20 w-fit mx-auto">
-                  <span className="text-2xl">👤</span>
-                </div>
-                <div className="text-3xl font-bold text-green-600">
-                  {searchQuery
-                    ? filteredDocuments.filter((d) => d.uploadedBy === "user")
-                        .length
-                    : documents.filter((d) => d.uploadedBy === "user").length}
-                </div>
-                <p className="text-sm text-muted-foreground font-medium">
-                  Your Uploads
-                </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {documents.slice(0, 3).map((doc, index) => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/30 transition-colors duration-200"
+                  >
+                    <div className="p-2 rounded-full bg-primary/10 text-sm">
+                      {getFileIcon(doc.type)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground text-sm">
+                        {doc.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {doc.uploadedBy === "doctor"
+                          ? `Added by ${doc.doctorName || "Doctor"}`
+                          : "Uploaded by you"}{" "}
+                        • {new Date(doc.uploadDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {getStatusBadge(doc.status)}
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Recent Activity Section */}
-        <Card className="border-border shadow-lg bg-gradient-to-r from-muted/20 to-transparent">
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <span className="text-xl">⏰</span>
-              </div>
-              <div>
-                <CardTitle className="text-foreground">
-                  Recent Activity
-                </CardTitle>
-                <CardDescription>
-                  Latest document updates and uploads
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {documents.slice(0, 3).map((doc, index) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/30 transition-colors duration-200"
-                >
-                  <div className="p-2 rounded-full bg-primary/10 text-sm">
-                    {getFileIcon(doc.type)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground text-sm">
-                      {doc.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {doc.uploadedBy === "doctor"
-                        ? `Added by ${doc.doctorName || "Doctor"}`
-                        : "Uploaded by you"}{" "}
-                      • {new Date(doc.uploadDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {getStatusBadge(doc.status)}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
