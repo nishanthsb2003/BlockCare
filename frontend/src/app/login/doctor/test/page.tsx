@@ -141,7 +141,7 @@ const upcomingAppointments: Appointment[] = [
   { time: "03:30 PM", patient: "Lisa Wilson", type: "Check-up" },
 ];
 
-export function DoctorProfile() {
+function DoctorProfile() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

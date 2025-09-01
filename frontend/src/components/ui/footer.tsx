@@ -9,20 +9,20 @@ interface FooterProps extends React.HTMLAttributes<HTMLElement> {
 export function Footer({ className, ...props }: FooterProps) {
   return (
     <footer
-      className={cn("w-full bg-background border-t py-8 md:py-12", className)}
+      className={cn("w-full bg-background border-t py-6 sm:py-8 md:py-12", className)}
       {...props}
     >
-      <div className="container px-4 mx-auto">
+      <div className="container px-4 md:px-6 mx-auto">
         {/* Top section with logo and sections */}
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 mb-8">
+        <div className="grid grid-cols-2 gap-6 xs:gap-8 sm:grid-cols-2 md:grid-cols-4 mb-8">
           {/* Brand column */}
-          <div className="flex flex-col">
-            <h3 className="text-xl font-semibold mb-4">BlockCare</h3>
-            <p className="text-sm text-muted-foreground mb-4 max-w-xs">
+          <div className="flex flex-col col-span-2 sm:col-span-1">
+            <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">BlockCare</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 max-w-xs">
               Secure blockchain-based healthcare records management for patients
               and providers.
             </p>
-            <div className="flex space-x-4 mt-auto">
+            <div className="flex space-x-4 mt-2 sm:mt-auto">
               {/* Social Media Icons */}
               <a
                 href="#"
@@ -31,8 +31,8 @@ export function Footer({ className, ...props }: FooterProps) {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -50,8 +50,8 @@ export function Footer({ className, ...props }: FooterProps) {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -71,8 +71,8 @@ export function Footer({ className, ...props }: FooterProps) {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -88,11 +88,11 @@ export function Footer({ className, ...props }: FooterProps) {
           </div>
 
           {/* Services column */}
-          <div>
-            <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider">
+          <div className="col-span-1">
+            <h3 className="text-xs sm:text-sm font-semibold mb-3 sm:mb-4 uppercase tracking-wider">
               Services
             </h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
               <li>
                 <Link
                   href="#"
@@ -129,11 +129,11 @@ export function Footer({ className, ...props }: FooterProps) {
           </div>
 
           {/* Company column */}
-          <div>
-            <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider">
+          <div className="col-span-1">
+            <h3 className="text-xs sm:text-sm font-semibold mb-3 sm:mb-4 uppercase tracking-wider">
               Company
             </h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
               <li>
                 <Link
                   href="#"
@@ -170,11 +170,11 @@ export function Footer({ className, ...props }: FooterProps) {
           </div>
 
           {/* Legal column */}
-          <div>
-            <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider">
+          <div className="col-span-1">
+            <h3 className="text-xs sm:text-sm font-semibold mb-3 sm:mb-4 uppercase tracking-wider">
               Legal
             </h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
               <li>
                 <Link
                   href="#"
@@ -212,28 +212,28 @@ export function Footer({ className, ...props }: FooterProps) {
         </div>
 
         {/* Divider */}
-        <div className="h-px w-full bg-border my-6"></div>
+        <div className="h-px w-full bg-border my-4 sm:my-6"></div>
 
         {/* Bottom section with copyright and additional links */}
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <p className="text-center text-sm text-muted-foreground md:text-left">
+        <div className="flex flex-col items-center justify-between gap-3 sm:gap-4 md:flex-row">
+          <p className="text-center text-xs sm:text-sm text-muted-foreground md:text-left">
             &copy; {new Date().getFullYear()} BlockCare. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap justify-center md:justify-end items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
             <a
               href="#"
               className="hover:underline hover:text-foreground transition-colors"
             >
               Support
             </a>
-            <span className="text-muted-foreground/50">|</span>
+            <span className="hidden sm:inline text-muted-foreground/50">|</span>
             <a
               href="#"
               className="hover:underline hover:text-foreground transition-colors"
             >
               Accessibility
             </a>
-            <span className="text-muted-foreground/50">|</span>
+            <span className="hidden sm:inline text-muted-foreground/50">|</span>
             <a
               href="#"
               className="hover:underline hover:text-foreground transition-colors"
