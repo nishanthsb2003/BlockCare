@@ -171,28 +171,22 @@ const DataLossInsights = () => {
   return (
     <div
       ref={componentRef}
-      className={`py-20 transition-all duration-1000 ease-out bg-black ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
-      }`}
+      className={`w-full py-12 sm:py-16 md:py-24 lg:py-32 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      } transition-opacity duration-1000`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          className={`text-center mb-14 transition-all duration-700 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-        >
-          <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 px-4 py-2 rounded-full border border-red-500/20 mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <span className="text-xs tracking-widest font-medium">
-              Data Security Alert
-            </span>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Secure Your Healthcare Data
+            </h2>
+            <p className="text-foreground/70 text-base sm:text-lg max-w-2xl mx-auto">
+              Every year, over 41 million patient records are compromised in
+              data breaches. Take control with BlockCare's blockchain security.
+            </p>
           </div>
-          <h2 className="text-3xl lg:text-4xl font-bold mb-5 text-white">
-            Healthcare Data Loss: A Growing Concern
-          </h2>
-          <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-            Healthcare data breaches expose sensitive patient information,
-            threatening privacy and compromising trust.{" "}
+          <p className="text-center text-foreground/70 text-base mb-12">
             <span className="text-cyan-400 font-medium">
               BlockCare's blockchain technology
             </span>{" "}
@@ -201,7 +195,7 @@ const DataLossInsights = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-14 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-14 items-stretch">
           {/* Left Column - Bar Chart */}
           <div
             className={`transition-all duration-500 h-full ${
@@ -212,27 +206,27 @@ const DataLossInsights = () => {
             style={{ transitionDelay: "200ms" }}
           >
             <Card className="bg-black border-gray-800 shadow-xl h-full">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
                 <div className="flex items-center gap-2 mb-1">
                   <FileWarning className="h-4 w-4 text-red-500" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-red-500">
                     Breach Analysis
                   </span>
                 </div>
-                <CardTitle className="text-white text-lg">
+                <CardTitle className="text-white text-base sm:text-lg">
                   Data Breach Causes
                 </CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="text-gray-400 text-xs sm:text-sm">
                   Primary causes of healthcare data breaches in 2025
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-[280px]">
+              <CardContent className="px-3 sm:px-6">
+                <div className="h-[200px] sm:h-[280px]">
                   <Bar data={barChartData} options={barChartOptions} />
                 </div>
               </CardContent>
-              <CardFooter>
-                <p className="text-sm text-gray-400">
+              <CardFooter className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                <p className="text-gray-400">
                   <span className="font-medium">Key finding:</span> Hacking and
                   IT incidents account for
                   <span className="text-cyan-400 font-semibold"> 58%</span> of
@@ -244,7 +238,7 @@ const DataLossInsights = () => {
           </div>
 
           {/* Right Column - Analytics and Stats */}
-          <div className="space-y-8 h-full flex flex-col">
+          <div className="order-1 md:order-2 space-y-6 sm:space-y-8 h-full flex flex-col">
             {/* Analytics Component */}
             <div
               className={`transition-all duration-500 flex-1 ${
@@ -255,7 +249,7 @@ const DataLossInsights = () => {
               style={{ transitionDelay: "400ms" }}
             >
               <Card className="bg-black border-gray-800 shadow-xl h-full">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
                   <div className="flex items-center gap-2 mb-1">
                     <Shield className="h-4 w-4 text-cyan-400" />
                     <span className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
@@ -297,7 +291,7 @@ const DataLossInsights = () => {
 
             {/* Protection Stats Cards */}
             <div
-              className={`grid grid-cols-3 gap-4 transition-all duration-500 ${
+              className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 transition-all duration-500 ${
                 isVisible
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-10"
@@ -307,13 +301,13 @@ const DataLossInsights = () => {
               {protectionStats.map((stat, index) => (
                 <div
                   key={index}
-                  className="rounded-xl bg-black border border-gray-800 shadow-xl p-4"
+                  className="rounded-xl bg-black border border-gray-800 shadow-xl p-3 sm:p-4"
                 >
                   <div className="flex flex-col items-center text-center">
-                    <div className="bg-cyan-400/10 p-2 rounded-full mb-3">
+                    <div className="bg-cyan-400/10 p-1.5 sm:p-2 rounded-full mb-2 sm:mb-3">
                       {stat.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-white">
+                    <h3 className="text-lg sm:text-xl font-bold text-white">
                       {stat.title}
                     </h3>
                     <p className="text-xs text-gray-400 mt-1">
@@ -333,9 +327,9 @@ const DataLossInsights = () => {
               }`}
               style={{ transitionDelay: "800ms" }}
             >
-              <Button className="w-full bg-cyan-400 hover:bg-cyan-500 text-black py-5 rounded-lg font-semibold hover:shadow-[0_0_40px_rgba(6,182,212,0.4)] transition-all duration-200">
+              <Button className="w-full bg-cyan-400 hover:bg-cyan-500 text-black py-3 sm:py-4 md:py-5 rounded-lg font-semibold text-sm sm:text-base hover:shadow-[0_0_40px_rgba(6,182,212,0.4)] transition-all duration-200">
                 <span>Protect Your Medical Records Now</span>
-                <ArrowUpRight className="h-5 w-5 ml-2" />
+                <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
               </Button>
             </div>
           </div>

@@ -11,8 +11,28 @@ import { Footer } from "@/components/ui/footer";
 const Hero = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLElement | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Check if we're on mobile on initial load
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Set initial state
+    checkIfMobile();
+
+    // Add resize listener
+    window.addEventListener("resize", checkIfMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
+
+  useEffect(() => {
+    // Only add mousemove event listener if not on mobile
+    if (isMobile) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       if (heroRef.current) {
         const rect = heroRef.current.getBoundingClientRect();
@@ -28,7 +48,7 @@ const Hero = () => {
       hero.addEventListener("mousemove", handleMouseMove);
       return () => hero.removeEventListener("mousemove", handleMouseMove);
     }
-  }, []);
+  }, [isMobile]);
 
   const GrainOverlay = () => (
     <div
@@ -41,7 +61,7 @@ const Hero = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
       <GrainOverlay />
 
       {/* Subtle grid pattern */}
@@ -58,38 +78,55 @@ const Hero = () => {
       <Navigation />
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative py-20 lg:py-28">
+      <section
+        ref={heroRef}
+        className="relative py-12 sm:py-16 md:py-20 lg:py-28 flex-grow"
+      >
         {/* Ambient cursor-follow light */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-100"
+          className="pointer-events-none absolute inset-0 opacity-100 transition-all duration-300"
           style={{
-            background: `radial-gradient(600px circle at ${mousePosition.x}% ${mousePosition.y}%, rgb(var(--primary) / 0.08), transparent 40%)`,
+            background: isMobile
+              ? `radial-gradient(300px circle at 50% 30%, rgb(var(--primary) / 0.08), transparent 40%)`
+              : `radial-gradient(600px circle at ${mousePosition.x}% ${mousePosition.y}%, rgb(var(--primary) / 0.08), transparent 40%)`,
           }}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-14 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 lg:gap-14 items-center">
             {/* Left Column */}
-            <HeroContent />
+            <div className="order-2 lg:order-1">
+              <HeroContent />
+            </div>
 
             {/* Right Column */}
-            <div className="relative lg:pl-8">
-              <ModelViewer modelPath={"/models/heart.glb"} />
+            <div className="relative order-1 lg:order-2 lg:pl-8 -mt-4 sm:mt-0 flex justify-center lg:justify-start">
+              <div className="w-full max-w-[300px] sm:max-w-[400px] lg:max-w-none">
+                <ModelViewer
+                  modelPath={"/models/heart.glb"}
+                  height={isMobile ? "300px" : "400px"}
+                  autoRotate={true}
+                />
+              </div>
               {/* <StatsCards /> */}
             </div>
           </div>
         </div>
 
-        {/* Background Decorative Rings */}
-        <div className="absolute top-1/4 -right-10 w-[26rem] h-[26rem] bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-[110px] -z-10" />
-        <div className="absolute bottom-1/4 -left-10 w-[22rem] h-[22rem] bg-gradient-to-br from-primary/15 to-background/10 rounded-full blur-[110px] -z-10" />
+        {/* Background Decorative Rings - Responsive positioning */}
+        <div className="absolute top-1/4 -right-10 w-[16rem] sm:w-[20rem] md:w-[26rem] h-[16rem] sm:h-[20rem] md:h-[26rem] bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-[90px] sm:blur-[110px] -z-10" />
+        <div className="absolute bottom-1/4 -left-10 w-[14rem] sm:w-[18rem] md:w-[22rem] h-[14rem] sm:h-[18rem] md:h-[22rem] bg-gradient-to-br from-primary/15 to-background/10 rounded-full blur-[90px] sm:blur-[110px] -z-10" />
       </section>
 
-      {/* Data Loss Insights Section - Appears on Scroll */}
-      <DataLossInsights />
-      
+      {/* Data Loss Insights Section - Responsive Container */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto">
+          <DataLossInsights />
+        </div>
+      </div>
+
       {/* Footer */}
-      <Footer className="mt-12" />
+      <Footer className="mt-auto" />
     </div>
   );
 };
