@@ -5,6 +5,8 @@ import HeroContent from "./HeroContent";
 import InteractiveRecord from "./InteractiveRecord";
 import StatsCards from "./StatsCards";
 import ModelViewer from "@/components/ModelViewer";
+import DataLossInsights from "./DataLossInsights";
+import { Footer } from "@/components/ui/footer";
 
 const Hero = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -82,6 +84,12 @@ const Hero = () => {
         <div className="absolute top-1/4 -right-10 w-[26rem] h-[26rem] bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-[110px] -z-10" />
         <div className="absolute bottom-1/4 -left-10 w-[22rem] h-[22rem] bg-gradient-to-br from-primary/15 to-background/10 rounded-full blur-[110px] -z-10" />
       </section>
+
+      {/* Data Loss Insights Section - Appears on Scroll */}
+      <DataLossInsights />
+      
+      {/* Footer */}
+      <Footer className="mt-12" />
     </div>
   );
 };

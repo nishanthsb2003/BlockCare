@@ -4,6 +4,7 @@ import { useState } from "react";
 import { User, Building2, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Footer } from "@/components/ui/footer";
 
 interface RoleCardProps {
   title: string;
@@ -117,7 +118,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col">
       <header className="p-6">
         <Link
           href="/"
@@ -174,6 +175,11 @@ const LoginPage: React.FC = () => {
           )}
         </div>
       </main>
+
+      {/* Footer */}
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 };

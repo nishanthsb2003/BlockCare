@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Shield,
 } from "lucide-react";
+import { Footer } from "@/components/ui/footer";
 
 const isValidEmail = (email: string) => /[^\s@]+@[^\s@]+\.[^\s@]+/.test(email);
 const isValidAadhaar = (value: string) => /^\d{12}$/.test(value);
@@ -225,11 +226,7 @@ const UserLoginPage: React.FC = () => {
         </div>
       </main>
 
-      <footer className="p-6 text-center">
-        <p className="text-xs text-muted-foreground">
-          © 2024 BlockCare. HIPAA compliant blockchain health records.
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 };

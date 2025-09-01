@@ -25,6 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Footer } from "@/components/ui/footer";
 import {
   Eye,
   EyeOff,
@@ -92,30 +93,22 @@ export default function DoctorLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-xl shadow-xl border-0">
-        {/* Back Button */}
-        <div className="p-4 pb-0">
-          <Link href="/login">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-between items-center">
             <Button
               variant="ghost"
-              size="sm"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              className="p-0 h-auto mb-4"
+              onClick={() => router.push("/login")}
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Login Options
+              <ArrowLeft className="h-4 w-4 mr-2" /> Back
             </Button>
-          </Link>
-        </div>
-
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Stethoscope className="h-8 w-8 text-primary" />
-            </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Doctor Login</CardTitle>
-          <CardDescription>Access your BlockCare doctor portal</CardDescription>
+          <CardTitle className="text-2xl">Hospital Login</CardTitle>
+          <CardDescription>
+            Secure access to patient records and hospital systems.
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -266,6 +259,9 @@ export default function DoctorLoginPage() {
           </div>
         </CardFooter>
       </Card>
+      <div className="mt-auto w-full">
+        <Footer />
+      </div>
     </div>
   );
 }
