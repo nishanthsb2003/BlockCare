@@ -13,10 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useFileUpload } from "@/hooks/supabase";
 
 interface UploadComponentProps {
-  onFileSelect: (file: File) => void;
-  onUpload?: (file: File) => void;
+  patientId?: string;
+  onUploadComplete?: (document: any) => void;
   acceptedTypes?: string[];
   maxSize?: number; // in MB
   showCamera?: boolean;
@@ -30,8 +31,8 @@ interface UploadedFile extends File {
 }
 
 const UploadComponent: React.FC<UploadComponentProps> = ({
-  onFileSelect,
-  onUpload,
+  patientId,
+  onUploadComplete,
   acceptedTypes = [".pdf", ".jpg", ".jpeg", ".png"],
   maxSize = 10,
   showCamera = true,
@@ -41,9 +42,10 @@ const UploadComponent: React.FC<UploadComponentProps> = ({
 }) => {
   const [selectedFile, setSelectedFile] = useState<UploadedFile | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [uploadError, setUploadError] = useState<string>("");
+
+  const { uploadFile, isUploading, progress, error } = useFileUpload();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -73,11 +75,11 @@ const UploadComponent: React.FC<UploadComponentProps> = ({
     (file: File) => {
       const validation = validateFile(file);
       if (validation) {
-        setError(validation);
+        setUploadError(validation);
         return;
       }
 
-      setError("");
+      setUploadError("");
       const fileWithPreview = Object.assign(file, {
         preview: file.type.startsWith("image/")
           ? URL.createObjectURL(file)
@@ -85,9 +87,8 @@ const UploadComponent: React.FC<UploadComponentProps> = ({
       });
 
       setSelectedFile(fileWithPreview);
-      onFileSelect(file);
     },
-    [onFileSelect, acceptedTypes, maxSize]
+    [acceptedTypes, maxSize]
   );
 
   // Handle drag and drop
@@ -134,9 +135,9 @@ const UploadComponent: React.FC<UploadComponentProps> = ({
         videoRef.current.srcObject = stream;
       }
       setIsCameraOpen(true);
-      setError("");
+      setUploadError("");
     } catch (err) {
-      setError("Unable to access camera. Please check permissions.");
+      setUploadError("Unable to access camera. Please check permissions.");
     }
   };
 
@@ -180,17 +181,32 @@ const UploadComponent: React.FC<UploadComponentProps> = ({
     }
   };
 
-  // Handle upload
+  // Handle upload to Supabase
   const handleUpload = async () => {
-    if (!selectedFile || !onUpload) return;
+    if (!selectedFile || !patientId) return;
 
-    setIsUploading(true);
     try {
-      await onUpload(selectedFile);
-    } catch (err) {
-      setError("Upload failed. Please try again.");
-    } finally {
-      setIsUploading(false);
+      // Upload to Supabase
+      const result = await uploadFile(patientId, selectedFile, {
+        description: "Uploaded via web interface",
+        uploadedAt: new Date().toISOString(),
+      });
+
+      if (result.success) {
+        // If we have an onUploadComplete callback, call it
+        if (onUploadComplete) {
+          onUploadComplete(result.document);
+        }
+
+        // Clear the selected file after successful upload
+        removeFile();
+      } else {
+        setUploadError(
+          result.error?.message || "Upload failed. Please try again."
+        );
+      }
+    } catch (err: any) {
+      setUploadError(err.message || "Upload failed. Please try again.");
     }
   };
 
@@ -275,9 +291,25 @@ const UploadComponent: React.FC<UploadComponentProps> = ({
           <canvas ref={canvasRef} style={{ display: "none" }} />
 
           {/* Error Display */}
-          {error && (
+          {(uploadError || error) && (
             <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-destructive">{uploadError || error}</p>
+            </div>
+          )}
+
+          {/* Upload Progress */}
+          {isUploading && (
+            <div className="mb-4">
+              <div className="flex justify-between mb-1">
+                <span className="text-sm font-medium">Uploading...</span>
+                <span className="text-sm font-medium">{progress}%</span>
+              </div>
+              <div className="w-full bg-accent h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-primary h-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
             </div>
           )}
 
@@ -326,7 +358,7 @@ const UploadComponent: React.FC<UploadComponentProps> = ({
           )}
 
           {/* Upload Area */}
-          {!selectedFile && (
+          {!selectedFile && !isUploading && (
             <div
               className={cn(
                 "relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200",
@@ -400,7 +432,7 @@ const UploadComponent: React.FC<UploadComponentProps> = ({
           )}
 
           {/* Upload Button */}
-          {selectedFile && onUpload && (
+          {selectedFile && patientId && (
             <div className="flex justify-center">
               <Button
                 onClick={handleUpload}

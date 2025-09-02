@@ -11,25 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PatientDocumentModal from "@/components/PatientDocumentModal";
 import PatientTable from "@/components/PatientTable";
-import {
-  ArrowLeft,
-  CalendarDays,
-  Mail,
-  MapPin,
-  Phone,
-  Plus,
-  Search,
-  Stethoscope,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Clock, Search, Stethoscope, Users } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Patient, Doctor, Appointment } from "@/types/medical";
+import type { Patient, Doctor } from "@/types/medical";
 
-// Mock data for demonstration
+// Mock data for doctor
 const doctorData: Doctor = {
   name: "Dr. Sarah Johnson",
   specialty: "Cardiologist",
@@ -43,24 +32,25 @@ const doctorData: Doctor = {
     "Advanced Cardiac Life Support",
     "Interventional Cardiology",
   ],
-  bio: "Dr. Sarah Johnson is a highly experienced cardiologist with over 15 years of practice in interventional cardiology. She specializes in complex cardiac procedures and has published numerous research papers in cardiovascular medicine.",
+  bio: "Dr. Sarah Johnson is a highly experienced cardiologist with over 15 years of practice in interventional cardiology.",
   avatar: "/professional-doctor-headshot.png",
 };
 
+// Mock data for patients
 const patientsData: Patient[] = [
   {
     id: 1,
-    name: "John Smith",
+    name: "Nishant",
     age: 45,
     condition: "Hypertension",
     lastVisit: "2024-01-15",
     nextAppointment: "2024-02-15",
     status: "Active",
-    email: "john.smith@email.com",
+    email: "nishant@email.com",
     phone: "+1 (555) 987-6543",
     address: "123 Main Street, New York, NY 10001",
     bloodType: "A+",
-    emergencyContact: "Jane Smith - +1 (555) 987-6544",
+    emergencyContact: "nishant - +1 (555) 987-6544",
   },
   {
     id: 2,
@@ -118,33 +108,41 @@ const patientsData: Patient[] = [
     bloodType: "A-",
     emergencyContact: "Mary Taylor - +1 (555) 567-8902",
   },
-  {
-    id: 6,
-    name: "Jennifer Martinez",
-    age: 52,
-    condition: "Valve Disease",
-    lastVisit: "2024-01-03",
-    nextAppointment: "2024-01-30",
-    status: "Active",
-    email: "jennifer.martinez@email.com",
-    phone: "+1 (555) 678-9012",
-    address: "987 Cedar Lane, Miami, FL 33101",
-    bloodType: "O-",
-    emergencyContact: "Carlos Martinez - +1 (555) 678-9013",
-  },
 ];
 
-const upcomingAppointments: Appointment[] = [
-  { time: "09:00 AM", patient: "John Smith", type: "Follow-up" },
-  { time: "10:30 AM", patient: "Emily Davis", type: "Consultation" },
-  { time: "02:00 PM", patient: "Michael Brown", type: "Procedure" },
-  { time: "03:30 PM", patient: "Lisa Wilson", type: "Check-up" },
+// Mock data for recently viewed patients
+const recentlyViewedPatients = [
+  {
+    id: 2,
+    name: "Emily Davis",
+    time: "Today, 10:30 AM",
+    condition: "Arrhythmia",
+  },
+  {
+    id: 5,
+    name: "Robert Taylor",
+    time: "Today, 9:15 AM",
+    condition: "Heart Failure",
+  },
+  {
+    id: 1,
+    name: "Nishant",
+    time: "Yesterday, 4:45 PM",
+    condition: "Hypertension",
+  },
+  {
+    id: 3,
+    name: "Michael Brown",
+    time: "Yesterday, 11:20 AM",
+    condition: "Coronary Artery Disease",
+  },
 ];
 
 function DoctorProfile() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState(recentlyViewedPatients);
   const router = useRouter();
 
   const handleGoBack = () => {
@@ -154,6 +152,35 @@ function DoctorProfile() {
   const handlePatientClick = (patient: Patient) => {
     setSelectedPatient(patient);
     setIsModalOpen(true);
+
+    // Add to recently viewed if not already at the top
+    const isAlreadyTop =
+      recentlyViewed.length > 0 && recentlyViewed[0].id === patient.id;
+
+    if (!isAlreadyTop) {
+      const now = new Date();
+      const timeString =
+        now.getHours() >= 12
+          ? `Today, ${now.getHours() % 12 || 12}:${now
+              .getMinutes()
+              .toString()
+              .padStart(2, "0")} PM`
+          : `Today, ${now.getHours()}:${now
+              .getMinutes()
+              .toString()
+              .padStart(2, "0")} AM`;
+
+      const newRecentItem = {
+        id: patient.id,
+        name: patient.name,
+        time: timeString,
+        condition: patient.condition,
+      };
+
+      // Remove if exists and add to top
+      const filteredRecent = recentlyViewed.filter((p) => p.id !== patient.id);
+      setRecentlyViewed([newRecentItem, ...filteredRecent].slice(0, 10)); // Keep only 10 items
+    }
   };
 
   const handleCloseModal = () => {
@@ -168,30 +195,30 @@ function DoctorProfile() {
   );
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      {/* Go Back Button */}
-      <div className="flex items-center mb-6">
-        <Button
-          variant="ghost"
-          onClick={handleGoBack}
-          className="flex items-center gap-2 hover:bg-muted/50 shadow-md border-0"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Go Back
-        </Button>
-      </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 sm:space-y-8">
+        {/* Go Back Button */}
+        <div className="flex items-center mb-4 sm:mb-6">
+          <Button
+            variant="ghost"
+            onClick={handleGoBack}
+            className="flex items-center gap-2 hover:bg-accent/10 text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </Button>
+        </div>
 
-      {/* Header Section */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        <Card className="flex-1 shadow-lg border-0">
-          <CardHeader className="pb-4">
+        {/* Doctor Header */}
+        <Card className="border-border shadow-md bg-card">
+          <CardContent className="pt-6 pb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <Avatar className="h-24 w-24">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 bg-primary/10 border-2 border-primary/20">
                 <AvatarImage
                   src={doctorData.avatar || "/placeholder.svg"}
                   alt={doctorData.name}
                 />
-                <AvatarFallback className="text-2xl font-bold bg-primary text-primary-foreground">
+                <AvatarFallback className="text-xl font-bold text-primary bg-primary/10">
                   {doctorData.name
                     .split(" ")
                     .map((n) => n[0])
@@ -199,188 +226,128 @@ function DoctorProfile() {
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
-                <CardTitle className="text-3xl font-bold text-foreground">
-                  {doctorData.name}
-                </CardTitle>
-                <CardDescription className="text-lg flex items-center gap-2">
-                  <Stethoscope className="h-5 w-5" />
-                  {doctorData.specialty}
-                </CardDescription>
-                <div className="flex flex-wrap gap-2">
-                  {doctorData.certifications.slice(0, 2).map((cert, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {cert}
-                    </Badge>
-                  ))}
+                <div className="space-y-1">
+                  <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
+                    {doctorData.name}
+                  </h2>
+                  <p className="text-base flex items-center gap-2 text-primary">
+                    <Stethoscope className="h-4 w-4" />
+                    {doctorData.specialty}
+                  </p>
                 </div>
+                <p className="text-sm text-muted-foreground max-w-2xl">
+                  {doctorData.bio}
+                </p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span>{doctorData.email}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span>{doctorData.phone}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>{doctorData.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                <span>{doctorData.experience} experience</span>
-              </div>
-            </div>
-            <p className="text-muted-foreground leading-relaxed">
-              {doctorData.bio}
-            </p>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="patients" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-3">
-          <TabsTrigger value="patients" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Patients
-          </TabsTrigger>
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <Stethoscope className="h-4 w-4" />
-            Overview
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="patients" className="space-y-6">
-          {/* Patients Section */}
-          <Card className="shadow-lg border-0">
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Patient List ({filteredPatients.length})
-                  </CardTitle>
-                  <CardDescription>
-                    Manage and view your patient information
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search patients..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-64 shadow-md border-0"
-                    />
+        {/* Main Content - Patient Records Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Patient Records */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="border-border shadow-md bg-card">
+              <CardHeader className="pb-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-card-foreground">
+                      <Users className="h-5 w-5 text-primary" />
+                      Patient Records
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      View and access patient medical records
+                    </CardDescription>
                   </div>
-                  <Button className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 shadow-md border-0">
-                    <Plus className="h-4 w-4" />
-                    Add Patient
-                  </Button>
+                  <div className="w-full sm:w-auto">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search patients..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 w-full bg-input border-input text-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <PatientTable
-                patients={filteredPatients}
-                onPatientClick={handlePatientClick}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="overview" className="space-y-6">
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Patients
-                </CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-primary">
-                  {patientsData.length}
+              <CardContent className="pt-4">
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <PatientTable
+                    patients={filteredPatients}
+                    onPatientClick={handlePatientClick}
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">Active in care</p>
-              </CardContent>
-            </Card>
-            <Card className="shadow-lg border-0">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Today's Appointments
-                </CardTitle>
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-primary">
-                  {upcomingAppointments.length}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Scheduled for today
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="shadow-lg border-0">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Critical Cases
-                </CardTitle>
-                <Stethoscope className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-destructive">
-                  {patientsData.filter((p) => p.status === "Critical").length}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Require attention
-                </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Professional Details */}
-          <Card className="shadow-lg border-0">
-            <CardHeader>
-              <CardTitle>Professional Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">Education</h4>
-                <p className="text-muted-foreground">{doctorData.education}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Certifications</h4>
-                <div className="flex flex-wrap gap-2">
-                  {doctorData.certifications.map((cert, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="border-0 shadow-md"
-                    >
-                      {cert}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          {/* Recently Viewed Records */}
+          <div className="space-y-6">
+            <Card className="border-border shadow-md bg-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg text-card-foreground">
+                  <Clock className="h-5 w-5 text-primary" />
+                  Recently Viewed
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Patient records you've accessed recently
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-2">
+                  {recentlyViewed.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No recently viewed patients</p>
+                    </div>
+                  ) : (
+                    recentlyViewed.map((patient) => {
+                      const fullPatient = patientsData.find(
+                        (p) => p.id === patient.id
+                      );
 
-      {/* Patient Document Modal */}
-      <PatientDocumentModal
-        patient={selectedPatient}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
+                      return (
+                        <div
+                          key={`${patient.id}-${patient.time}`}
+                          onClick={() =>
+                            fullPatient && handlePatientClick(fullPatient)
+                          }
+                          className="p-3 rounded-lg border border-border hover:border-primary/30 bg-card/60 hover:bg-card/90 cursor-pointer transition-all duration-200"
+                        >
+                          <div className="flex justify-between items-start gap-2">
+                            <div>
+                              <h3 className="font-medium text-primary">
+                                {patient.name}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {patient.condition}
+                              </p>
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className="text-xs bg-accent/10 border-accent/20"
+                            >
+                              {patient.time}
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Patient Document Modal */}
+        <PatientDocumentModal
+          patient={selectedPatient}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+      </div>
     </div>
   );
 }
