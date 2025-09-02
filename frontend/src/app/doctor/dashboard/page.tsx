@@ -114,8 +114,13 @@ export default function DoctorDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground font-medium">
+            Loading dashboard...
+          </p>
+        </div>
       </div>
     );
   }
@@ -127,92 +132,125 @@ export default function DoctorDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-border">
+      <header className="bg-card border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Stethoscope className="h-5 w-5 text-primary" />
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center space-x-4">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Stethoscope className="h-6 w-6 text-primary" />
               </div>
-              <div>
-                <h1 className="text-xl font-semibold text-foreground">
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-bold text-card-foreground tracking-tight">
                   Medical Dashboard
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Welcome back, {doctor.name}
+                <p className="text-sm text-muted-foreground font-medium">
+                  Welcome back, Dr. {doctor.name}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span>{doctor.name}</span>
-                <Badge variant="secondary">
-                  {doctor.specialty || "Doctor"}
-                </Badge>
+            <div className="flex items-center space-x-6">
+              <div className="hidden sm:flex items-center space-x-3 px-4 py-2 rounded-lg bg-accent/10 border border-border/50">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-card-foreground">
+                    {doctor.name}
+                  </span>
+                  <Badge variant="secondary" className="text-xs w-fit">
+                    {doctor.specialty || "Doctor"}
+                  </Badge>
+                </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="font-medium"
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Welcome Section */}
+        <div className="mb-10">
+          <div className="text-center sm:text-left">
+            <h2 className="text-3xl font-bold text-card-foreground mb-2">
+              Patient Management
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl">
+              Access patient records securely and manage your medical practice
+              efficiently.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           {/* Patient Search Section */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Search className="h-5 w-5" />
+          <div className="xl:col-span-3">
+            <Card className="shadow-md">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center space-x-3 text-xl">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Search className="h-5 w-5 text-primary" />
+                  </div>
                   <span>Access Patient Records</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handlePatientSearch} className="space-y-4">
-                  <div className="flex space-x-3">
-                    <Input
-                      type="text"
-                      placeholder="Enter patient ID or email"
-                      value={patientId}
-                      onChange={(e) => setPatientId(e.target.value)}
-                      className="flex-1 h-12 text-base"
-                    />
+                <form onSubmit={handlePatientSearch} className="space-y-6">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        placeholder="Enter patient ID or email address"
+                        value={patientId}
+                        onChange={(e) => setPatientId(e.target.value)}
+                        className="h-14 text-base px-4 border-2 focus:border-primary transition-colors"
+                      />
+                    </div>
                     <Button
                       type="submit"
                       disabled={isSearching || !patientId.trim()}
-                      className="h-12 px-6"
+                      size="lg"
+                      className="h-14 px-8 font-semibold min-w-[140px]"
                     >
                       {isSearching ? (
                         <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
                           <span>Searching...</span>
                         </div>
                       ) : (
                         <>
-                          <Search className="h-4 w-4 mr-2" />
-                          Access
+                          <Search className="h-5 w-5 mr-2" />
+                          Access Records
                         </>
                       )}
                     </Button>
                   </div>
 
                   {error && (
-                    <div className="flex items-center space-x-2 text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>{error}</span>
+                    <div className="flex items-start space-x-3 text-sm text-destructive-foreground bg-destructive/10 p-4 rounded-lg border border-destructive/20">
+                      <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                      <span className="font-medium">{error}</span>
                     </div>
                   )}
 
-                  <div className="text-sm text-muted-foreground">
-                    <p>
-                      Enter a patient's ID or email address to access their
-                      medical records.
+                  <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      <strong className="text-card-foreground">
+                        How to search:
+                      </strong>{" "}
+                      You can search using either the patient's unique ID or
+                      their registered email address. All patient data is
+                      encrypted and access is logged for security.
                     </p>
                   </div>
                 </form>
@@ -221,37 +259,50 @@ export default function DoctorDashboard() {
           </div>
 
           {/* Doctor Info Panel */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Doctor Information</CardTitle>
+          <div className="xl:col-span-1">
+            <Card className="shadow-md h-fit sticky top-8">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center space-x-2 text-lg">
+                  <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center">
+                    <User className="h-4 w-4 text-primary" />
+                  </div>
+                  <span>Doctor Information</span>
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Name
-                  </label>
-                  <p className="text-sm">{doctor.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Profession
-                  </label>
-                  <p className="text-sm">
-                    {doctor.specialty || "Medical Professional"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Experience
-                  </label>
-                  <p className="text-sm">{doctor.experience || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Hospital
-                  </label>
-                  <p className="text-sm">{doctor.hospital || "N/A"}</p>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex flex-col space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Full Name
+                    </label>
+                    <p className="text-base font-medium text-card-foreground">
+                      {doctor.name}
+                    </p>
+                  </div>
+                  <div className="flex flex-col space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Specialty
+                    </label>
+                    <p className="text-base font-medium text-card-foreground">
+                      {doctor.specialty || "Medical Professional"}
+                    </p>
+                  </div>
+                  <div className="flex flex-col space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Experience
+                    </label>
+                    <p className="text-base font-medium text-card-foreground">
+                      {doctor.experience || "Not specified"}
+                    </p>
+                  </div>
+                  <div className="flex flex-col space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Hospital/Clinic
+                    </label>
+                    <p className="text-base font-medium text-card-foreground">
+                      {doctor.hospital || "Not specified"}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -259,57 +310,72 @@ export default function DoctorDashboard() {
         </div>
 
         {/* Recent Patients */}
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Clock className="h-5 w-5" />
+        <section className="mt-12">
+          <Card className="shadow-md">
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center space-x-3 text-xl">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-primary" />
+                </div>
                 <span>Recent Patients</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {recentPatients.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No recent patients</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Patient records will appear here after you access them
+                <div className="text-center py-12">
+                  <div className="h-20 w-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-6">
+                    <Users className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-card-foreground mb-2">
+                    No recent patients
+                  </h3>
+                  <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
+                    Patient records will appear here after you access them.
+                    Start by searching for a patient using their ID or email
+                    address above.
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {recentPatients.map((recentPatient) => (
+                <div className="space-y-4">
+                  {recentPatients.map((recentPatient, index) => (
                     <div
                       key={recentPatient.patient_id}
                       onClick={() => handlePatientSelect(recentPatient)}
-                      className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                      className="group flex items-center justify-between p-6 border border-border rounded-xl hover:bg-accent/30 hover:border-accent cursor-pointer transition-all duration-200 hover:shadow-md"
                     >
                       <div className="flex items-center space-x-4">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="h-5 w-5 text-primary" />
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                          <User className="h-6 w-6 text-primary" />
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">
+                        <div className="flex flex-col space-y-1">
+                          <p className="font-semibold text-card-foreground text-lg group-hover:text-primary transition-colors">
                             {recentPatient.patients.name}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            {recentPatient.patients.condition} • Age{" "}
-                            {recentPatient.patients.age}
+                          <p className="text-muted-foreground">
+                            <span className="font-medium">
+                              {recentPatient.patients.condition}
+                            </span>
+                            <span className="mx-2">•</span>
+                            <span>Age {recentPatient.patients.age}</span>
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">
-                            Last accessed
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right hidden sm:block">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Last Accessed
                           </p>
-                          <p className="text-sm font-medium">
+                          <p className="text-sm font-semibold text-card-foreground mt-1">
                             {new Date(
                               recentPatient.accessed_at
-                            ).toLocaleDateString()}
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
                           </p>
                         </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
                     </div>
                   ))}
@@ -317,8 +383,8 @@ export default function DoctorDashboard() {
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }
