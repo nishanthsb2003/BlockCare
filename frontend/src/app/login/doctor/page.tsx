@@ -1,30 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Footer } from "@/components/ui/footer";
+import Link from "next/link";
 import {
   Eye,
   EyeOff,
@@ -33,57 +11,56 @@ import {
   Mail,
   Key,
   ArrowLeft,
-  AlertCircle,
+  UserPlus,
 } from "lucide-react";
-import Link from "next/link";
+import { Footer } from "@/components/ui/footer";
 import { useDoctorAuth } from "@/hooks/supabase/useDoctorAuth";
 
-const doctorLoginSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: "Doctor name must be at least 2 characters.",
-    })
-    .max(50, {
-      message: "Doctor name must not exceed 50 characters.",
-    }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  verificationKey: z
-    .string()
-    .min(8, {
-      message: "Verification key must be at least 8 characters.",
-    })
-    .max(100, {
-      message: "Verification key must not exceed 100 characters.",
-    }),
-});
+const isValidEmail = (email: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-type DoctorLoginFormValues = z.infer<typeof doctorLoginSchema>;
-
-export default function DoctorLoginPage() {
+const DoctorLoginPage: React.FC = () => {
   const router = useRouter();
   const { login } = useDoctorAuth();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [verificationKey, setVerificationKey] = useState("");
   const [showVerificationKey, setShowVerificationKey] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const form = useForm<DoctorLoginFormValues>({
-    resolver: zodResolver(doctorLoginSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      verificationKey: "",
-    },
-  });
+  const isFormValid = () => {
+    return (
+      name.trim().length >= 2 &&
+      isValidEmail(email) &&
+      verificationKey.length >= 8
+    );
+  };
 
-  async function onSubmit(data: DoctorLoginFormValues) {
-    setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name.trim() || name.trim().length < 2) {
+      setError("Doctor name must be at least 2 characters");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    if (verificationKey.length < 8) {
+      setError("Verification key must be at least 8 characters");
+      return;
+    }
+
+    setLoading(true);
     setError(null);
 
     try {
-      const success = await login(data.name, data.email, data.verificationKey);
+      const success = await login(name, email, verificationKey);
 
       if (success) {
         router.push("/doctor/dashboard");
@@ -92,201 +69,188 @@ export default function DoctorLoginPage() {
           "Invalid credentials. Please check your name, email, and verification key."
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Doctor login error:", err);
       setError("Login failed. Please try again.");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex justify-between items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Back
-            </Button>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Back Button */}
+      <div className="p-4">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Main Login
+        </Link>
+      </div>
+
+      {/* Login Form */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-lg">
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card">
               <Stethoscope className="h-4 w-4 text-primary" />
+              <span className="text-xs tracking-widest text-foreground/70">
+                MEDICAL PROFESSIONAL LOGIN
+              </span>
             </div>
-            <div>
-              <CardTitle className="text-xl">
-                Medical Professional Login
-              </CardTitle>
-            </div>
+            <h1 className="mt-4 text-3xl font-bold text-foreground">
+              Welcome Back, Doctor
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Enter your credentials to access the medical dashboard
+            </p>
           </div>
-          <CardDescription>
-            Enter your credentials to access the medical dashboard
-          </CardDescription>
-        </CardHeader>
 
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <div className="flex items-center space-x-2 text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>{error}</span>
-                </div>
-              )}
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+          >
+            {/* Name */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Doctor Name
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="Dr. John Smith"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Name Field */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Doctor Name</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <UserCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="dr. john smith"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Email */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Email Address
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="doctor@hospital.com"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Email Field */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          type="email"
-                          placeholder="doctor@hospital.com"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Verification Key */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Verification Key
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <Key className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type={showVerificationKey ? "text" : "password"}
+                  value={verificationKey}
+                  onChange={(e) => {
+                    setVerificationKey(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="Enter your verification key"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowVerificationKey(!showVerificationKey)}
+                  className="p-1 hover:bg-muted rounded transition-colors"
+                >
+                  {showVerificationKey ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Your unique medical license verification key
+              </p>
+            </div>
 
-              {/* Verification Key Field */}
-              <FormField
-                control={form.control}
-                name="verificationKey"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Verification Key</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          type={showVerificationKey ? "text" : "password"}
-                          placeholder="Enter your verification key"
-                          className="pl-10 pr-10"
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() =>
-                            setShowVerificationKey(!showVerificationKey)
-                          }
-                          tabIndex={-1}
-                        >
-                          {showVerificationKey ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs text-muted-foreground">
-                      Your unique medical license verification key
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full h-11 bg-primary hover:bg-black"
-                disabled={isLoading}
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={!isFormValid() || loading}
+              className="w-full mb-4 px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+            >
+              {loading ? "Verifying..." : "Login to Dashboard"}
+            </button>
+
+            {/* Support Link */}
+            <div className="text-center">
+              <Link
+                href="/contact"
+                className="text-sm text-primary hover:underline"
               >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Verifying...
-                  </div>
-                ) : (
-                  "Login to Dashboard"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
+                Need help with access? Contact Support
+              </Link>
+            </div>
+          </form>
 
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
+          {/* Registration Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
               Need to create an account?{" "}
               <Link
                 href="/doctor/register"
-                className="font-medium text-primary hover:underline underline-offset-4"
+                className="text-primary hover:underline inline-flex items-center gap-1"
               >
+                <UserPlus className="h-4 w-4" />
                 Register as Doctor
               </Link>
             </p>
           </div>
 
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
-              Need help with access?{" "}
-              <Link
-                href="/contact"
-                className="font-medium text-primary hover:underline underline-offset-4"
-              >
-                Contact Support
-              </Link>
-            </p>
-          </div>
-
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
+          {/* Patient Portal Link */}
+          <div className="mt-4 text-center">
+            <p className="text-sm text-muted-foreground">
               Patient login?{" "}
               <Link
                 href="/patient/login"
-                className="font-medium text-primary hover:underline underline-offset-4"
+                className="text-primary hover:underline"
               >
                 Switch to Patient Portal
               </Link>
             </p>
           </div>
-        </CardFooter>
-      </Card>
-      <div className="mt-auto w-full">
-        <Footer />
-      </div>
+
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            By continuing, you agree to our terms of service and privacy policy.
+          </p>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
-}
+};
+
+export default DoctorLoginPage;

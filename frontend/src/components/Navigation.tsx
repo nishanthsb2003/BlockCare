@@ -4,11 +4,31 @@ import {
   Menu as MenuIcon,
   Facebook,
   Instagram,
+  Github,
   Linkedin,
 } from "lucide-react";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const scrollToFooter = () => {
+    const footer = document.getElementById("footer");
+    if (footer) {
+      footer.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+    setIsMenuOpen(false);
+  };
+
+  const handleNavClick = (item: string) => {
+    if (item === "CONTACT") {
+      scrollToFooter();
+    } else {
+      setIsMenuOpen(false);
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border">
@@ -28,44 +48,39 @@ const Navigation = () => {
 
           {/* Center: Links */}
           <div className="hidden md:flex items-center gap-8">
-            {["HOME", "FEATURES", "PRIVACY", "PRICING", "CONTACT"].map(
-              (item) => (
-                <a
-                  key={item}
-                  href="#"
-                  className="text-foreground/60 hover:text-foreground tracking-widest text-xs rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                >
-                  {item}
-                </a>
-              )
-            )}
+            {["HOME", "FEATURES", "PRIVACY", "CONTACT"].map((item) => (
+              <button
+                key={item}
+                onClick={() => handleNavClick(item)}
+                className="text-foreground/60 hover:text-foreground tracking-widest text-xs rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors"
+              >
+                {item}
+              </button>
+            ))}
           </div>
 
           {/* Right: Actions */}
           <div className="hidden md:flex items-center gap-4 text-foreground/70">
-            <a
-              href="#"
-              className="hover:text-foreground"
-              aria-label="Facebook"
-            >
+            {/* <a href="#" className="hover:text-foreground" aria-label="Facebook">
               <Facebook className="h-4 w-4" />
-            </a>
+            </a> */}
             <a
               href="#"
               className="hover:text-foreground"
               aria-label="Instagram"
             >
-              <Instagram className="h-4 w-4" />
+              {/* <Instagram className="h-4 w-4" /> */}
             </a>
             <a
-              href="#"
+              href="https://github.com/AdarsHH30/BlockCare"
               className="hover:text-foreground"
               aria-label="LinkedIn"
             >
-              <Linkedin className="h-4 w-4" />
+              {/* <Linkedin className="h-4 w-4" /> */}
+              <Github className="h-4 w-4" />
             </a>
             <a
-              href="#"
+              href="/login"
               className="ml-2 inline-flex items-center gap-2 rounded-xl border border-border bg-foreground/5 px-4 py-2 text-xs font-semibold text-foreground hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Get started
@@ -87,14 +102,14 @@ const Navigation = () => {
           <div className="md:hidden border-t border-border py-4">
             <div className="flex flex-col space-y-3">
               {["HOME", "FEATURES", "PRIVACY", "PRICING", "CONTACT"].map(
-                (i) => (
-                  <a
-                    key={i}
-                    href="#"
-                    className="text-foreground/70 hover:text-foreground px-2 py-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                (item) => (
+                  <button
+                    key={item}
+                    onClick={() => handleNavClick(item)}
+                    className="text-foreground/70 hover:text-foreground px-2 py-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors text-left"
                   >
-                    {i}
-                  </a>
+                    {item}
+                  </button>
                 )
               )}
               <div className="flex items-center gap-4 pt-2 border-t border-border">

@@ -1,15 +1,16 @@
 import Time "mo:base/Time";
 import Array "mo:base/Array";
 
-type PatientMetadata = {
-  patientId: Text;
-  ipfsCid: Text;
-  timestamp: Time.Time;
-  recordHash: Text;
-  accessControl: [Text];
-};
+persistent actor MedicalRecords {
 
-actor MedicalRecords {
+  type PatientMetadata = {
+    patientId: Text;
+    ipfsCid: Text;
+    timestamp: Time.Time;
+    recordHash: Text;
+    accessControl: [Text];
+  };
+
   stable var records: [PatientMetadata] = [];
 
   public func storeRecord(patientId: Text, ipfsCid: Text, recordHash: Text, accessControl: [Text]) : async () {
@@ -30,4 +31,4 @@ actor MedicalRecords {
       case null { null };
     }
   };
-}
+};
