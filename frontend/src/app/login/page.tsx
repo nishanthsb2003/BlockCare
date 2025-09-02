@@ -110,7 +110,9 @@ const LoginPage: React.FC = () => {
 
     try {
       await new Promise((res) => setTimeout(res, 1500));
-      router.push(selectedRole === "patient" ? "/login/user" : "/login/doctor");
+      router.push(
+        selectedRole === "patient" ? "/patient/login" : "/login/doctor"
+      );
     } catch (error) {
       console.error("Navigation failed:", error);
       setIsLoading(false);

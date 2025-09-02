@@ -4,12 +4,20 @@ import { supabase } from './client';
 export const authService = {
   // Register a new user with email and password
   async signUp(email: string, password: string) {
+    console.log("🔧 AuthService: Attempting to register user:", email);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
     
-    if (error) throw error;
+    console.log("🔧 AuthService: SignUp result:", { data, error });
+    
+    if (error) {
+      console.error("🔧 AuthService: SignUp error:", error);
+      throw error;
+    }
+    
+    console.log("🔧 AuthService: User registered successfully:", data.user?.id);
     return data;
   },
 
@@ -49,6 +57,25 @@ export const authService = {
     });
     
     if (error) throw error;
+  },
+
+  // Check if user exists in auth.users table
+  async debugCheckUser(email: string) {
+    try {
+      console.log("🔧 Checking if user exists in auth.users table for:", email);
+      
+      // This won't work from client side, but we can check current session
+      const { data: session } = await supabase.auth.getSession();
+      console.log("🔧 Current session:", session);
+      
+      const { data: user } = await supabase.auth.getUser();
+      console.log("🔧 Current user:", user);
+      
+      return { session, user };
+    } catch (error) {
+      console.error("🔧 Error checking user:", error);
+      return { error };
+    }
   },
 
   // Update user profile

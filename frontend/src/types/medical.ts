@@ -1,26 +1,31 @@
 // Types for patient and document data
 
 export interface Patient {
-  id: number;
+  id: string; // UUID from database
   name: string;
-  age: number;
-  condition: string;
-  lastVisit: string;
-  nextAppointment: string;
-  status: "Active" | "Critical" | "Follow-up";
-  email: string;
-  phone: string;
-  address: string;
-  bloodType: string;
-  emergencyContact: string;
+  age: number | null;
+  gender: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  condition: string | null;
+  bloodtype: string | null; // matches database schema
+  emergencycontact: string | null; // matches database schema
+  allergies: string[] | null; // text array in database
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface Document {
-  id: number;
+  id: string; // UUID from database
+  patient_id: string; // UUID reference to patient
   name: string;
   type: string;
-  date: string;
-  size: string;
+  size: number; // int8 in database
+  path: string;
+  metadata?: any; // jsonb in database
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Doctor {
@@ -43,5 +48,24 @@ export interface Appointment {
 }
 
 export type PatientDocuments = {
-  [patientId: number]: Document[];
+  [patientId: string]: Document[];
 };
+
+// Additional interfaces for the patient system
+export interface PatientRegistration {
+  name: string;
+  email: string;
+  password: string;
+  age: number;
+  gender: string;
+  phone: string;
+  address: string;
+  bloodtype: string;
+  emergencycontact: string;
+  allergies?: string;
+}
+
+export interface PatientLogin {
+  email: string;
+  password: string;
+}

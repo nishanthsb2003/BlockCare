@@ -25,6 +25,30 @@ export const patientService = {
     if (error) throw error;
     return data;
   },
+
+  // Get a patient by user_id (auth user ID)
+  async getPatientByUserId(userId: string) {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Get a patient by email
+  async getPatientByEmail(email: string) {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('email', email)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
   
   // Get all patients
   async getAllPatients() {
