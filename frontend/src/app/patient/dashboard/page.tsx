@@ -38,7 +38,6 @@ const PatientDashboard: React.FC = () => {
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      console.log("No user found, redirecting to login");
       router.push("/patient/login");
     }
   }, [user, authLoading, router]);
@@ -50,14 +49,12 @@ const PatientDashboard: React.FC = () => {
 
       try {
         setLoading(true);
-        console.log("Loading patient data for user:", user.email);
 
         // Try to get patient record using email
         try {
           const patientData = await patientService.getPatientByEmail(
             user.email || ""
           );
-          console.log("Patient data loaded:", patientData);
           setPatient(patientData);
 
           // Get patient documents
@@ -67,7 +64,6 @@ const PatientDashboard: React.FC = () => {
           setDocuments(documentsData);
         } catch (patientErr) {
           // If no patient record exists, create a default one
-          console.log("No patient record found, using default data");
 
           // Create a temporary patient object with user data
           const defaultPatient: Patient = {
@@ -104,7 +100,6 @@ const PatientDashboard: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      console.log("Signing out user");
       await signOut();
       router.push("/patient/login");
     } catch (err) {

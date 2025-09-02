@@ -67,12 +67,7 @@ const PatientLoginPage: React.FC = () => {
     setError(null);
 
     try {
-      console.log("Attempting login with:", {
-        email,
-        passwordLength: password.length,
-      });
       const result = await signIn(email, password);
-      console.log("Sign in result:", result);
 
       if (!result.success) {
         const errorMessage =
@@ -97,7 +92,6 @@ const PatientLoginPage: React.FC = () => {
         return;
       }
 
-      console.log("Login successful, redirecting to dashboard");
       // Redirect to dashboard after successful login
       router.push("/patient/dashboard");
     } catch (err: any) {
@@ -116,8 +110,6 @@ const PatientLoginPage: React.FC = () => {
       // Simulate DigiLocker authentication
       await new Promise((r) => setTimeout(r, 2000));
 
-            // For demo purposes, redirect to dashboard
-      // In real implementation, this would integrate with actual DigiLocker API
       router.push("/patient/dashboard");
     } catch (err: any) {
       setError("DigiLocker authentication failed. Please try again.");

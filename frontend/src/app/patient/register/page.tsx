@@ -89,7 +89,6 @@ const PatientRegisterPage: React.FC = () => {
 
     try {
       // Register user with Supabase Auth
-      console.log("Starting registration for:", formData.email);
       const authResult = await signUp(formData.email, formData.password);
 
       if (!authResult.success) {
@@ -101,8 +100,6 @@ const PatientRegisterPage: React.FC = () => {
             : "Failed to create account";
         throw new Error(errorMessage);
       }
-
-      console.log("User registered successfully, creating patient record");
 
       // Create patient record in database
       const patientData = {
@@ -124,14 +121,12 @@ const PatientRegisterPage: React.FC = () => {
       };
 
       await patientService.createPatient(patientData);
-      console.log("Patient record created successfully");
 
       // Note: If email confirmation is enabled in Supabase, the user won't be able to login
       // immediately after registration. They need to confirm their email first.
-      
+
       // Check if the user registration requires email confirmation
       if (!authResult.user?.email_confirmed_at) {
-        console.log("Email confirmation required - skipping auto-login");
         setSuccess(true);
         setTimeout(() => {
           router.push("/patient/login?registered=true");
@@ -140,13 +135,12 @@ const PatientRegisterPage: React.FC = () => {
       }
 
       // Automatically sign in the user after registration
-      console.log("Signing in user automatically...");
-      
+
       // Wait a moment for Supabase to fully process the registration
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const loginResult = await signIn(formData.email, formData.password);
-      
+
       if (!loginResult.success) {
         console.error("Auto-login failed:", loginResult.error);
         // Even if auto-login fails, registration was successful
@@ -158,10 +152,8 @@ const PatientRegisterPage: React.FC = () => {
         return;
       }
 
-      console.log("Auto-login successful, redirecting to dashboard");
       // Redirect directly to dashboard after successful auto-login
       router.push("/patient/dashboard");
-      
     } catch (err: any) {
       console.error("Registration error:", err);
       setError(err.message || "Registration failed. Please try again.");
@@ -179,7 +171,8 @@ const PatientRegisterPage: React.FC = () => {
             Registration Successful!
           </h1>
           <p className="text-muted-foreground mb-4">
-            Your account has been created. Please check your email to confirm your account, then try logging in.
+            Your account has been created. Please check your email to confirm
+            your account, then try logging in.
           </p>
         </div>
       </div>
