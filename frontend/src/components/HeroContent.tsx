@@ -40,7 +40,7 @@ const HeroContent = () => {
           <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
-      <p className="text-foreground/50 text-xs">No signup required</p>
+      <p className="text-foreground/50 text-xs">SignUp required</p>
 
       <div className="flex flex-wrap justify-center lg:justify-start items-center gap-3 sm:gap-6 text-foreground/60 text-xs sm:text-sm">
         <div className="flex items-center gap-2">

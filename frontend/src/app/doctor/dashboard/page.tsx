@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDoctorAuth } from "@/hooks/supabase/useDoctorAuth";
 import { doctorService, patientService } from "@/lib/supabase/database";
+import {
+  testDatabaseConnection,
+  createTestPatient,
+  listAllPatients,
+} from "@/lib/supabase/test-db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +23,7 @@ import {
   LogOut,
   AlertCircle,
   ChevronRight,
+  Database,
 } from "lucide-react";
 
 interface Patient {
@@ -41,6 +47,7 @@ export default function DoctorDashboard() {
   const [recentPatients, setRecentPatients] = useState<RecentPatient[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -73,31 +80,64 @@ export default function DoctorDashboard() {
 
     try {
       // Try to find the patient by ID first, then by email
-      let patient;
+      let patient = null;
+      let searchError = null;
+
+      console.log("Searching for patient:", patientId);
+
+      // First try by ID
       try {
         patient = await patientService.getPatientById(patientId);
-      } catch {
+        console.log("Found patient by ID:", patient);
+      } catch (idError: any) {
+        console.log(
+          "Patient not found by ID, trying email...",
+          idError.message
+        );
+        searchError = idError;
+
         // If not found by ID, try by email
         try {
           patient = await patientService.getPatientByEmail(patientId);
-        } catch {
+          console.log("Found patient by email:", patient);
+        } catch (emailError: any) {
+          console.log("Patient not found by email either:", emailError.message);
           setError("Patient not found. Please check the Patient ID or email.");
           setIsSearching(false);
           return;
         }
       }
 
-      // Add patient access record
-      await doctorService.addPatientAccess(doctor.id, patient.id);
+      if (!patient) {
+        setError("Patient not found. Please check the Patient ID or email.");
+        setIsSearching(false);
+        return;
+      }
 
+      console.log("Adding patient access record...");
+      // Add patient access record (don't fail if this doesn't work)
+      try {
+        await doctorService.addPatientAccess(doctor.id, patient.id);
+        console.log("Patient access recorded successfully");
+      } catch (accessError: any) {
+        console.warn(
+          "Failed to record patient access, but continuing:",
+          accessError.message
+        );
+      }
+
+      console.log("Refreshing recent patients...");
       // Refresh recent patients
       await loadRecentPatients();
 
+      console.log("Redirecting to patient details...");
       // Redirect to patient details
       router.push(`/doctor/patient/${patient.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error searching for patient:", err);
-      setError("Failed to access patient. Please try again.");
+      setError(
+        `Failed to access patient: ${err.message || "Please try again."}`
+      );
     } finally {
       setIsSearching(false);
     }
@@ -110,6 +150,29 @@ export default function DoctorDashboard() {
   const handleSignOut = () => {
     logout();
     router.push("/login/doctor");
+  };
+
+  const handleDebugTest = async () => {
+    setDebugInfo("Running debug tests...");
+
+    // Test database connection
+    const isConnected = await testDatabaseConnection();
+    setDebugInfo((prev) => prev + `\nDatabase connected: ${isConnected}`);
+
+    // List all patients
+    const patients = await listAllPatients();
+    setDebugInfo(
+      (prev) => prev + `\nFound ${patients.length} patients in database`
+    );
+
+    // Create test patient
+    if (patients.length === 0) {
+      const testPatient = await createTestPatient();
+      setDebugInfo(
+        (prev) =>
+          prev + `\nCreated test patient: ${testPatient ? "Success" : "Failed"}`
+      );
+    }
   };
 
   if (loading) {
@@ -252,6 +315,30 @@ export default function DoctorDashboard() {
                       their registered email address. All patient data is
                       encrypted and access is logged for security.
                     </p>
+                  </div>
+
+                  {/* Debug Section */}
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                        Debug Tools (Development Only)
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDebugTest}
+                        className="text-xs"
+                      >
+                        <Database className="h-3 w-3 mr-1" />
+                        Test DB
+                      </Button>
+                    </div>
+                    {debugInfo && (
+                      <pre className="text-xs text-yellow-700 dark:text-yellow-300 whitespace-pre-wrap">
+                        {debugInfo}
+                      </pre>
+                    )}
                   </div>
                 </form>
               </CardContent>
