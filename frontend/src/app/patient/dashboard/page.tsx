@@ -22,6 +22,10 @@ import { Footer } from "@/components/ui/footer";
 import { useAuth } from "@/hooks/supabase/useAuth";
 import { patientService, documentService } from "@/lib/supabase/database";
 import { storageService } from "@/lib/supabase/storage";
+import {
+  testSupabaseConnection,
+  testStorageOperations,
+} from "@/lib/supabase/test";
 import { Patient, Document } from "@/types/medical";
 
 const PatientDashboard: React.FC = () => {
@@ -34,6 +38,7 @@ const PatientDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -116,13 +121,50 @@ const PatientDashboard: React.FC = () => {
       return;
     }
 
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      setError("File size must be less than 10MB");
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError(
+        "File type not supported. Please use PDF, JPG, PNG, DOC, or DOCX files."
+      );
+      return;
+    }
+
     try {
       setUploading(true);
+      setError(null); // Clear any previous errors
 
-      // Upload file to storage
+      console.log("=== Upload Debug Info ===");
+      console.log("Patient ID:", patient.id);
+      console.log("File:", file.name, file.type, file.size);
+
+      // Step 1: Initialize storage buckets
+      console.log("Step 1: Initializing buckets...");
+      await storageService.initializeBuckets();
+      console.log("Step 1: Buckets initialized successfully");
+
+      // Step 2: Upload file to storage
+      console.log("Step 2: Uploading file to storage...");
       const uploadResult = await storageService.uploadFile(patient.id, file);
+      console.log("Step 2: File uploaded successfully:", uploadResult);
 
-      // Create document record
+      // Step 3: Create document record in database
+      console.log("Step 3: Creating document record...");
       const documentData = {
         patient_id: patient.id,
         name: file.name,
@@ -137,11 +179,36 @@ const PatientDashboard: React.FC = () => {
       };
 
       const newDocument = await documentService.createDocument(documentData);
+      console.log("Step 3: Document record created:", newDocument);
+
       setDocuments((prev) => [newDocument, ...prev]);
       setShowUpload(false);
+
+      // Show success message
+      setSuccessMessage(`Successfully uploaded "${file.name}"`);
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err: any) {
       console.error("Upload error:", err);
-      setError("Failed to upload file");
+      console.log("Error details:", {
+        message: err.message,
+        code: err.code,
+        details: err.details,
+        hint: err.hint,
+        stack: err.stack,
+      });
+
+      let errorMessage = "Failed to upload file";
+      if (err.message?.includes("Policy")) {
+        errorMessage = "Access denied. Please check your authentication.";
+      } else if (err.message?.includes("duplicate")) {
+        errorMessage = "A file with this name already exists.";
+      } else if (err.message?.includes("size")) {
+        errorMessage = "File is too large. Please use a smaller file.";
+      } else if (err.message) {
+        errorMessage = `Upload failed: ${err.message}`;
+      }
+
+      setError(errorMessage);
     } finally {
       setUploading(false);
     }
@@ -149,11 +216,12 @@ const PatientDashboard: React.FC = () => {
 
   const handleViewDocument = async (document: Document) => {
     try {
+      setError(null); // Clear any previous errors
       const url = await storageService.getFileUrl(document.path);
       window.open(url, "_blank");
     } catch (err: any) {
       console.error("Error viewing document:", err);
-      setError("Failed to view document");
+      setError(`Failed to view document "${document.name}". Please try again.`);
     }
   };
 
@@ -178,6 +246,29 @@ const PatientDashboard: React.FC = () => {
   const formatAllergies = (allergies: string[] | null) => {
     if (!allergies || allergies.length === 0) return "None known";
     return allergies.join(", ");
+  };
+
+  // Debug function to test Supabase connection
+  const runConnectionTest = async () => {
+    console.log("=== Running Supabase Connection Test ===");
+    const connectionResult = await testSupabaseConnection();
+    const storageResult = await testStorageOperations();
+
+    console.log("Connection Test Results:", connectionResult);
+    console.log("Storage Test Results:", storageResult);
+
+    // Show results in UI
+    if (
+      connectionResult.auth &&
+      connectionResult.database &&
+      connectionResult.storage
+    ) {
+      setSuccessMessage("✅ All Supabase services are working correctly!");
+    } else {
+      setError(
+        `❌ Some services failed: ${JSON.stringify(connectionResult.details)}`
+      );
+    }
   };
 
   // Show loading while checking authentication
@@ -259,6 +350,13 @@ const PatientDashboard: React.FC = () => {
                 Welcome, {user.email}
               </div>
               <button
+                onClick={runConnectionTest}
+                className="p-2 rounded-lg hover:bg-muted transition-colors text-xs"
+                title="Test Supabase Connection"
+              >
+                🔧 Test
+              </button>
+              <button
                 onClick={() => router.push("/patient/settings")}
                 className="p-2 rounded-lg hover:bg-muted transition-colors"
                 title="Settings"
@@ -286,6 +384,30 @@ const PatientDashboard: React.FC = () => {
           <p className="text-muted-foreground mt-1">
             Manage your medical records and health information securely.
           </p>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-green-600"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                  {successMessage}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Profile Incomplete Banner */}
           {patient.id.startsWith("temp-") && (
@@ -436,7 +558,11 @@ const PatientDashboard: React.FC = () => {
                   </h3>
                 </div>
                 <button
-                  onClick={() => setShowUpload(!showUpload)}
+                  onClick={() => {
+                    setShowUpload(!showUpload);
+                    setError(null); // Clear any errors when toggling upload
+                    setSuccessMessage(null); // Clear success message
+                  }}
                   disabled={patient.id.startsWith("temp-")}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
                   title={
@@ -453,6 +579,18 @@ const PatientDashboard: React.FC = () => {
               {/* Upload Component */}
               {showUpload && (
                 <div className="mb-6 p-6 rounded-lg border border-dashed border-border bg-muted/50">
+                  {/* Error Display */}
+                  {error && (
+                    <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        <p className="text-sm text-red-800 dark:text-red-200">
+                          {error}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="text-center">
                     <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm font-medium text-foreground mb-1">

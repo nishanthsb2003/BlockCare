@@ -38,7 +38,6 @@ import {
 import Link from "next/link";
 import { useDoctorAuth } from "@/hooks/supabase/useDoctorAuth";
 
-// Form validation schema
 const doctorLoginSchema = z.object({
   name: z
     .string()
@@ -87,7 +86,6 @@ export default function DoctorLoginPage() {
       const success = await login(data.name, data.email, data.verificationKey);
 
       if (success) {
-        // Redirect to doctor dashboard
         router.push("/doctor/dashboard");
       } else {
         setError(
@@ -153,7 +151,7 @@ export default function DoctorLoginPage() {
                       <div className="relative">
                         <UserCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
-                          placeholder="Dr. John Smith"
+                          placeholder="dr. john smith"
                           className="pl-10"
                           {...field}
                         />
