@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -34,72 +33,104 @@ import {
   Key,
   ArrowLeft,
   AlertCircle,
+  CheckCircle2,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
-import { useDoctorAuth } from "@/hooks/supabase/useDoctorAuth";
+import { doctorService } from "@/lib/supabase/database";
 
 // Form validation schema
-const doctorLoginSchema = z.object({
+const doctorRegisterSchema = z.object({
   name: z
     .string()
-    .min(2, {
-      message: "Doctor name must be at least 2 characters.",
-    })
-    .max(50, {
-      message: "Doctor name must not exceed 50 characters.",
-    }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
+    .min(2, { message: "Doctor name must be at least 2 characters." })
+    .max(50, { message: "Doctor name must not exceed 50 characters." }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  specialty: z
+    .string()
+    .min(2, { message: "Specialty must be at least 2 characters." })
+    .max(50, { message: "Specialty must not exceed 50 characters." }),
+  hospital: z
+    .string()
+    .min(2, { message: "Hospital name must be at least 2 characters." })
+    .max(100, { message: "Hospital name must not exceed 100 characters." }),
+  experience: z.string().min(1, { message: "Experience is required." }),
   verificationKey: z
     .string()
-    .min(8, {
-      message: "Verification key must be at least 8 characters.",
-    })
-    .max(100, {
-      message: "Verification key must not exceed 100 characters.",
-    }),
+    .min(12, { message: "Verification key must be at least 12 characters." })
+    .max(100, { message: "Verification key must not exceed 100 characters." }),
 });
 
-type DoctorLoginFormValues = z.infer<typeof doctorLoginSchema>;
+type DoctorRegisterFormValues = z.infer<typeof doctorRegisterSchema>;
 
-export default function DoctorLoginPage() {
+export default function DoctorRegisterPage() {
   const router = useRouter();
-  const { login } = useDoctorAuth();
   const [showVerificationKey, setShowVerificationKey] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  const form = useForm<DoctorLoginFormValues>({
-    resolver: zodResolver(doctorLoginSchema),
+  const form = useForm<DoctorRegisterFormValues>({
+    resolver: zodResolver(doctorRegisterSchema),
     defaultValues: {
       name: "",
       email: "",
+      specialty: "",
+      hospital: "",
+      experience: "",
       verificationKey: "",
     },
   });
 
-  async function onSubmit(data: DoctorLoginFormValues) {
+  async function onSubmit(data: DoctorRegisterFormValues) {
     setIsLoading(true);
     setError(null);
 
     try {
-      const success = await login(data.name, data.email, data.verificationKey);
+      const doctorData = {
+        name: data.name,
+        email: data.email,
+        specialty: data.specialty,
+        hospital: data.hospital,
+        experience: data.experience,
+        verification_key: data.verificationKey,
+      };
 
-      if (success) {
-        // Redirect to doctor dashboard
-        router.push("/doctor/dashboard");
-      } else {
+      await doctorService.createDoctor(doctorData);
+      setSuccess(true);
+
+      setTimeout(() => {
+        router.push("/login/doctor?registered=true");
+      }, 2000);
+    } catch (err: any) {
+      console.error("Doctor registration error:", err);
+      if (err.message?.includes("duplicate key")) {
         setError(
-          "Invalid credentials. Please check your name, email, and verification key."
+          "A doctor with this email already exists. Please use a different email."
         );
+      } else {
+        setError(err.message || "Registration failed. Please try again.");
       }
-    } catch (err) {
-      console.error("Doctor login error:", err);
-      setError("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center">
+          <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Registration Successful!</h1>
+          <p className="text-muted-foreground mb-4">
+            Your doctor account has been created successfully.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Redirecting to login page...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -122,13 +153,11 @@ export default function DoctorLoginPage() {
               <Stethoscope className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-xl">
-                Medical Professional Login
-              </CardTitle>
+              <CardTitle className="text-xl">Doctor Registration</CardTitle>
             </div>
           </div>
           <CardDescription>
-            Enter your credentials to access the medical dashboard
+            Create your medical professional account
           </CardDescription>
         </CardHeader>
 
@@ -148,7 +177,7 @@ export default function DoctorLoginPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Doctor Name</FormLabel>
+                    <FormLabel>Full Name</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <UserCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -187,6 +216,61 @@ export default function DoctorLoginPage() {
                 )}
               />
 
+              {/* Specialty Field */}
+              <FormField
+                control={form.control}
+                name="specialty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Medical Specialty</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Cardiology, Pediatrics, etc."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Hospital Field */}
+              <FormField
+                control={form.control}
+                name="hospital"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hospital/Clinic</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="City General Hospital"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Experience Field */}
+              <FormField
+                control={form.control}
+                name="experience"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Years of Experience</FormLabel>
+                    <FormControl>
+                      <Input placeholder="5 years" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Verification Key Field */}
               <FormField
                 control={form.control}
@@ -199,7 +283,7 @@ export default function DoctorLoginPage() {
                         <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           type={showVerificationKey ? "text" : "password"}
-                          placeholder="Enter your verification key"
+                          placeholder="Enter your medical license verification key"
                           className="pl-10 pr-10"
                           {...field}
                         />
@@ -222,7 +306,8 @@ export default function DoctorLoginPage() {
                       </div>
                     </FormControl>
                     <FormDescription className="text-xs text-muted-foreground">
-                      Your unique medical license verification key
+                      Your unique medical license verification key (minimum 12
+                      characters)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -238,53 +323,29 @@ export default function DoctorLoginPage() {
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Verifying...
+                    Creating Account...
                   </div>
                 ) : (
-                  "Login to Dashboard"
+                  "Create Doctor Account"
                 )}
               </Button>
             </form>
           </Form>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
+        <div className="px-6 pb-6">
           <div className="text-center text-sm text-muted-foreground">
             <p>
-              Need to create an account?{" "}
+              Already have an account?{" "}
               <Link
-                href="/doctor/register"
+                href="/login/doctor"
                 className="font-medium text-primary hover:underline underline-offset-4"
               >
-                Register as Doctor
+                Sign in here
               </Link>
             </p>
           </div>
-
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
-              Need help with access?{" "}
-              <Link
-                href="/contact"
-                className="font-medium text-primary hover:underline underline-offset-4"
-              >
-                Contact Support
-              </Link>
-            </p>
-          </div>
-
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
-              Patient login?{" "}
-              <Link
-                href="/patient/login"
-                className="font-medium text-primary hover:underline underline-offset-4"
-              >
-                Switch to Patient Portal
-              </Link>
-            </p>
-          </div>
-        </CardFooter>
+        </div>
       </Card>
       <div className="mt-auto w-full">
         <Footer />

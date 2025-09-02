@@ -148,3 +148,114 @@ export const documentService = {
     return true;
   }
 };
+
+// Database service for doctors
+export const doctorService = {
+  // Create a new doctor record
+  async createDoctor(doctorData: any) {
+    const { data, error } = await supabase
+      .from('doctors')
+      .insert(doctorData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+  
+  // Get a doctor by ID
+  async getDoctorById(id: string) {
+    const { data, error } = await supabase
+      .from('doctors')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Get a doctor by email
+  async getDoctorByEmail(email: string) {
+    const { data, error } = await supabase
+      .from('doctors')
+      .select('*')
+      .eq('email', email)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Authenticate doctor with name and verification key
+  async authenticateDoctor(name: string, email: string, verificationKey: string) {
+    const { data, error } = await supabase
+      .from('doctors')
+      .select('*')
+      .eq('name', name)
+      .eq('email', email)
+      .eq('verification_key', verificationKey)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Update doctor information
+  async updateDoctor(id: string, updates: any) {
+    const { data, error } = await supabase
+      .from('doctors')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Get recent patients for a doctor
+  async getDoctorPatients(doctorId: string) {
+    const { data, error } = await supabase
+      .from('patient_doctor_access')
+      .select(`
+        *,
+        patients(*)
+      `)
+      .eq('doctor_id', doctorId)
+      .order('accessed_at', { ascending: false })
+      .limit(10);
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Add patient access for doctor
+  async addPatientAccess(doctorId: string, patientId: string) {
+    const { data, error } = await supabase
+      .from('patient_doctor_access')
+      .insert({
+        doctor_id: doctorId,
+        patient_id: patientId,
+        accessed_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Check if doctor has access to patient
+  async checkPatientAccess(doctorId: string, patientId: string) {
+    const { data, error } = await supabase
+      .from('patient_doctor_access')
+      .select('*')
+      .eq('doctor_id', doctorId)
+      .eq('patient_id', patientId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  }
+};

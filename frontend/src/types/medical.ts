@@ -41,6 +41,19 @@ export interface Doctor {
   avatar: string;
 }
 
+// Database Doctor interface (for authenticated doctors)
+export interface DbDoctor {
+  id: string;
+  name: string;
+  email: string;
+  specialty?: string;
+  hospital?: string;
+  experience?: string;
+  verification_key: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Appointment {
   time: string;
   patient: string;
