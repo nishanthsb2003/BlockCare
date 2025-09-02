@@ -13,7 +13,7 @@ persistent actor MedicalRecords {
 
   stable var records: [PatientMetadata] = [];
 
-  public func storeRecord(patientId: Text, ipfsCid: Text, recordHash: Text, accessControl: [Text]) : async () {
+ public shared func storeRecord(patientId: Text, ipfsCid: Text, recordHash: Text, accessControl: [Text]) : async () {
     let timestamp = Time.now();
     let metadata: PatientMetadata = {
       patientId = patientId;
