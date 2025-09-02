@@ -1,29 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Footer } from "@/components/ui/footer";
+import Link from "next/link";
 import {
   Eye,
   EyeOff,
@@ -32,68 +11,84 @@ import {
   Mail,
   Key,
   ArrowLeft,
-  AlertCircle,
-  CheckCircle2,
   Building2,
+  CheckCircle2,
 } from "lucide-react";
-import Link from "next/link";
+import { Footer } from "@/components/ui/footer";
 import { doctorService } from "@/lib/supabase/database";
 
-// Form validation schema
-const doctorRegisterSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Doctor name must be at least 2 characters." })
-    .max(50, { message: "Doctor name must not exceed 50 characters." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  specialty: z
-    .string()
-    .min(2, { message: "Specialty must be at least 2 characters." })
-    .max(50, { message: "Specialty must not exceed 50 characters." }),
-  hospital: z
-    .string()
-    .min(2, { message: "Hospital name must be at least 2 characters." })
-    .max(100, { message: "Hospital name must not exceed 100 characters." }),
-  experience: z.string().min(1, { message: "Experience is required." }),
-  verificationKey: z
-    .string()
-    .min(12, { message: "Verification key must be at least 12 characters." })
-    .max(100, { message: "Verification key must not exceed 100 characters." }),
-});
+const isValidEmail = (email: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-type DoctorRegisterFormValues = z.infer<typeof doctorRegisterSchema>;
-
-export default function DoctorRegisterPage() {
+const DoctorRegisterPage: React.FC = () => {
   const router = useRouter();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [specialty, setSpecialty] = useState("");
+  const [hospital, setHospital] = useState("");
+  const [experience, setExperience] = useState("");
+  const [verificationKey, setVerificationKey] = useState("");
   const [showVerificationKey, setShowVerificationKey] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const form = useForm<DoctorRegisterFormValues>({
-    resolver: zodResolver(doctorRegisterSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      specialty: "",
-      hospital: "",
-      experience: "",
-      verificationKey: "",
-    },
-  });
+  const isFormValid = () => {
+    return (
+      name.trim().length >= 2 &&
+      isValidEmail(email) &&
+      specialty.trim().length >= 2 &&
+      hospital.trim().length >= 2 &&
+      experience.trim().length >= 1 &&
+      verificationKey.length >= 12
+    );
+  };
 
-  async function onSubmit(data: DoctorRegisterFormValues) {
-    setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name.trim() || name.trim().length < 2) {
+      setError("Doctor name must be at least 2 characters");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    if (!specialty.trim() || specialty.trim().length < 2) {
+      setError("Specialty must be at least 2 characters");
+      return;
+    }
+
+    if (!hospital.trim() || hospital.trim().length < 2) {
+      setError("Hospital name must be at least 2 characters");
+      return;
+    }
+
+    if (!experience.trim()) {
+      setError("Experience is required");
+      return;
+    }
+
+    if (verificationKey.length < 12) {
+      setError("Verification key must be at least 12 characters");
+      return;
+    }
+
+    setLoading(true);
     setError(null);
 
     try {
       const doctorData = {
-        name: data.name,
-        email: data.email,
-        specialty: data.specialty,
-        hospital: data.hospital,
-        experience: data.experience,
-        verification_key: data.verificationKey,
+        name,
+        email,
+        specialty,
+        hospital,
+        experience,
+        verification_key: verificationKey,
       };
 
       await doctorService.createDoctor(doctorData);
@@ -112,9 +107,9 @@ export default function DoctorRegisterPage() {
         setError(err.message || "Registration failed. Please try again.");
       }
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }
+  };
 
   if (success) {
     return (
@@ -134,222 +129,219 @@ export default function DoctorRegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex justify-between items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="p-0 h-auto font-normal text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Back
-            </Button>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Back Button */}
+      <div className="p-4">
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
+      </div>
+
+      {/* Registration Form */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-lg">
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card">
               <Stethoscope className="h-4 w-4 text-primary" />
+              <span className="text-xs tracking-widest text-foreground/70">
+                DOCTOR REGISTRATION
+              </span>
             </div>
-            <div>
-              <CardTitle className="text-xl">Doctor Registration</CardTitle>
-            </div>
+            <h1 className="mt-4 text-3xl font-bold text-foreground">
+              Create Doctor Account
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Create your medical professional account
+            </p>
           </div>
-          <CardDescription>
-            Create your medical professional account
-          </CardDescription>
-        </CardHeader>
 
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <div className="flex items-center space-x-2 text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>{error}</span>
-                </div>
-              )}
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4"
+          >
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Full Name
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="Dr. John Smith"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Name Field */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <UserCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Dr. John Smith"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Email Address
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="doctor@hospital.com"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Email Field */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          type="email"
-                          placeholder="doctor@hospital.com"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Specialty */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Medical Specialty
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={specialty}
+                  onChange={(e) => {
+                    setSpecialty(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="Cardiology, Pediatrics, etc."
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Specialty Field */}
-              <FormField
-                control={form.control}
-                name="specialty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Medical Specialty</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Cardiology, Pediatrics, etc."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Hospital */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Hospital/Clinic
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={hospital}
+                  onChange={(e) => {
+                    setHospital(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="City General Hospital"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Hospital Field */}
-              <FormField
-                control={form.control}
-                name="hospital"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Hospital/Clinic</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="City General Hospital"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Experience */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Years of Experience
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={experience}
+                  onChange={(e) => {
+                    setExperience(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="5 years"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Experience Field */}
-              <FormField
-                control={form.control}
-                name="experience"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Years of Experience</FormLabel>
-                    <FormControl>
-                      <Input placeholder="5 years" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Verification Key */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Verification Key
+              </label>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                <Key className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type={showVerificationKey ? "text" : "password"}
+                  value={verificationKey}
+                  onChange={(e) => {
+                    setVerificationKey(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="Enter your medical license verification key"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowVerificationKey(!showVerificationKey)}
+                  className="p-1 hover:bg-muted rounded transition-colors"
+                >
+                  {showVerificationKey ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Your unique medical license verification key (minimum 12
+                characters)
+              </p>
+            </div>
 
-              {/* Verification Key Field */}
-              <FormField
-                control={form.control}
-                name="verificationKey"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Verification Key</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          type={showVerificationKey ? "text" : "password"}
-                          placeholder="Enter your medical license verification key"
-                          className="pl-10 pr-10"
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() =>
-                            setShowVerificationKey(!showVerificationKey)
-                          }
-                          tabIndex={-1}
-                        >
-                          {showVerificationKey ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs text-muted-foreground">
-                      Your unique medical license verification key (minimum 12
-                      characters)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full h-11 bg-primary hover:bg-black"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Creating Account...
-                  </div>
-                ) : (
-                  "Create Doctor Account"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={!isFormValid() || loading}
+              className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+            >
+              {loading ? "Creating Account..." : "Create Doctor Account"}
+            </button>
+          </form>
 
-        <div className="px-6 pb-6">
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
+          {/* Login Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link
                 href="/login/doctor"
-                className="font-medium text-primary hover:underline underline-offset-4"
+                className="text-primary hover:underline"
               >
                 Sign in here
               </Link>
             </p>
           </div>
+
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            By continuing, you agree to our terms of service and privacy policy.
+          </p>
         </div>
-      </Card>
-      <div className="mt-auto w-full">
-        <Footer />
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
-}
+};
+
+export default DoctorRegisterPage;
