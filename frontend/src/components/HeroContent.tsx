@@ -32,15 +32,18 @@ const HeroContent = () => {
           <span>Get Started</span>
           <Play className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
         </Link>
-        <button
+        <Link
+          href="https://github.com/AdarsHH30/BlockCare/blob/main/HowItWorks.md"
+          target="_blank"
+          rel="noopener noreferrer"
           className="group bg-foreground/5 text-foreground border border-border px-5 sm:px-7 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm tracking-wide hover:bg-foreground/10 transition-all duration-200 flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           aria-label="Learn how BlockCare works"
         >
           <span>How it works</span>
           <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
-        </button>
+        </Link>
       </div>
-      <p className="text-foreground/50 text-xs">No signup required</p>
+      <p className="text-foreground/50 text-xs">SignUp required</p>
 
       <div className="flex flex-wrap justify-center lg:justify-start items-center gap-3 sm:gap-6 text-foreground/60 text-xs sm:text-sm">
         <div className="flex items-center gap-2">

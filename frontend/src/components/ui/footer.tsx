@@ -18,9 +18,7 @@ export function Footer({ className, ...props }: FooterProps) {
       {...props}
     >
       <div className="container px-4 md:px-6 mx-auto py-8">
-        {/* Main Content */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-6">
-          {/* Brand Column */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -39,7 +37,6 @@ export function Footer({ className, ...props }: FooterProps) {
               and providers.
             </p>
 
-            {/* Social Links */}
             <div className="flex gap-2">
               <Link
                 href="https://github.com/AdarsHH30/BlockCare"
@@ -65,7 +62,6 @@ export function Footer({ className, ...props }: FooterProps) {
             </div>
           </div>
 
-          {/* Services Column */}
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-3">
               Services
@@ -89,7 +85,6 @@ export function Footer({ className, ...props }: FooterProps) {
             </ul>
           </div>
 
-          {/* Company & Legal Column */}
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-3">
               Company

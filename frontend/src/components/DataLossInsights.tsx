@@ -196,7 +196,6 @@ const DataLossInsights = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-14 items-stretch">
-          {/* Left Column - Bar Chart */}
           <div
             className={`transition-all duration-500 h-full ${
               isVisible
@@ -237,9 +236,7 @@ const DataLossInsights = () => {
             </Card>
           </div>
 
-          {/* Right Column - Analytics and Stats */}
           <div className="order-1 md:order-2 space-y-6 sm:space-y-8 h-full flex flex-col">
-            {/* Analytics Component */}
             <div
               className={`transition-all duration-500 flex-1 ${
                 isVisible
@@ -328,8 +325,13 @@ const DataLossInsights = () => {
               style={{ transitionDelay: "800ms" }}
             >
               <Button className="w-full bg-cyan-400 hover:bg-cyan-500 text-black py-3 sm:py-4 md:py-5 rounded-lg font-semibold text-sm sm:text-base hover:shadow-[0_0_40px_rgba(6,182,212,0.4)] transition-all duration-200">
-                <span>Protect Your Medical Records Now</span>
-                <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
+                <a
+                  href="/login"
+                  className="flex items-center justify-center w-full"
+                >
+                  <span>Protect Your Medical Records Now</span>
+                  <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
+                </a>
               </Button>
             </div>
           </div>

@@ -451,13 +451,22 @@ const PatientDashboard: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <div>
+                    <p className="text-sm text-muted-foreground">User ID</p>
+                    <p className="font-mono text-sm font-medium text-foreground break-all">
+                      {user.id}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <div>
                     <p className="text-sm text-muted-foreground">Full Name</p>
                     <p className="font-medium text-foreground">
                       {patient.name}
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <div>
@@ -467,7 +476,6 @@ const PatientDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <div>

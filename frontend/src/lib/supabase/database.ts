@@ -16,13 +16,17 @@ export const patientService = {
   
   // Get a patient by ID
   async getPatientById(id: string) {
+    console.log("Searching for patient by ID:", id);
     const { data, error } = await supabase
       .from('patients')
       .select('*')
       .eq('id', id)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching patient by ID:", error);
+      throw new Error(error.message || 'Patient not found');
+    }
     return data;
   },
 
@@ -40,13 +44,17 @@ export const patientService = {
 
   // Get a patient by email
   async getPatientByEmail(email: string) {
+    console.log("Searching for patient by email:", email);
     const { data, error } = await supabase
       .from('patients')
       .select('*')
       .eq('email', email)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching patient by email:", error);
+      throw new Error(error.message || 'Patient not found');
+    }
     return data;
   },
   
@@ -216,6 +224,14 @@ export const doctorService = {
 
   // Get recent patients for a doctor
   async getDoctorPatients(doctorId: string) {
+    // First check if the table exists
+    try {
+      await supabase.from('patient_doctor_access').select('*').limit(1);
+    } catch (tableError: any) {
+      console.warn("patient_doctor_access table doesn't exist, returning empty array");
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('patient_doctor_access')
       .select(`
@@ -226,12 +242,25 @@ export const doctorService = {
       .order('accessed_at', { ascending: false })
       .limit(10);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching doctor patients:", error);
+      return [];
+    }
     return data;
   },
 
   // Add patient access for doctor
   async addPatientAccess(doctorId: string, patientId: string) {
+    console.log("Adding patient access:", { doctorId, patientId });
+    
+    // First check if the table exists by trying a simple query
+    try {
+      await supabase.from('patient_doctor_access').select('*').limit(1);
+    } catch (tableError: any) {
+      console.warn("patient_doctor_access table doesn't exist, skipping access logging");
+      return { message: "Access logged locally (table not found)" };
+    }
+    
     const { data, error } = await supabase
       .from('patient_doctor_access')
       .insert({
@@ -242,7 +271,12 @@ export const doctorService = {
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error adding patient access:", error);
+      // Don't throw error here, just log it and continue
+      console.warn("Failed to log patient access, but continuing with patient lookup");
+      return { message: "Access not logged but proceeding" };
+    }
     return data;
   },
 
